@@ -36,7 +36,7 @@ export class Time {
    * @returns 夜時間なら true
    */
   public static isNightTime(date: Date) {
-    const hour = getHours(date)
-    return hour < this.NIGHT_TIME_END || hour >= this.NIGHT_TIME_START
+    const range = Time.nightTime(date)
+    return date < range.end || date >= range.start
   }
 }
