@@ -1,0 +1,115 @@
+import { test, expect } from 'vitest'
+import { Event } from './dto/event.ts'
+import { DayLog } from './DayLog.ts'
+import { SleepSummary } from './SleepSummary.ts'
+
+const startAt = new Date('2026-07-25T22:00:00Z')
+const endAt = new Date('2026-07-26T06:00:00Z')
+
+test('startAt 以前に入眠、endAt 以降に覚醒（途中覚醒あり)', () => {
+  const events: Event[] = [
+    { name: '起きる', datetime: new Date('2026-07-26T01:00:00Z') },
+    { name: '寝る', datetime: new Date('2026-07-26T01:30:00Z') },
+    { name: '起きる', datetime: new Date('2026-07-26T04:00:00Z') },
+    { name: '寝る', datetime: new Date('2026-07-26T05:00:00Z') },
+  ]
+  const input = new DayLog(events)
+  expect(new SleepSummary(input, startAt, endAt).score()).toEqual(122.5)
+})
+
+test('startAt 以前に入眠、endAt 以降に覚醒（途中覚醒なし)', () => {
+  const input = new DayLog([])
+  expect(new SleepSummary(input, startAt, endAt).score()).toEqual(640)
+})
+
+test('startAt 以降に入眠、endAt 以前に覚醒（途中覚醒あり）', () => {
+  const events: Event[] = [
+    { name: '寝る', datetime: new Date('2026-07-25T23:00:00Z') },
+    { name: '起きる', datetime: new Date('2026-07-26T01:00:00Z') },
+    { name: '寝る', datetime: new Date('2026-07-26T01:30:00Z') },
+    { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
+  ]
+  const input = new DayLog(events)
+  expect(new SleepSummary(input, startAt, endAt).score()).toEqual(102.5)
+})
+
+test('startAt 以降に入眠、endAt 以前に覚醒（途中覚醒なし）', () => {
+  const events: Event[] = [
+    { name: '寝る', datetime: new Date('2026-07-25T23:00:00Z') },
+    { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
+  ]
+  const input = new DayLog(events)
+  expect(new SleepSummary(input, startAt, endAt).score()).toEqual(315)
+})
+
+test('総睡眠時間が同じでも覚醒回数が少ないほうがスコアが高い', () => {
+  // 2回覚醒（低スコア）
+  const badSleepEvents: Event[] = [
+    { name: '寝る', datetime: new Date('2026-07-25T22:30:00Z') },
+    { name: '起きる', datetime: new Date('2026-07-26T05:30:00Z') },
+  ]
+  const badSleepLog = new DayLog(badSleepEvents)
+  const badSleepScore = new SleepSummary(badSleepLog, startAt, endAt).score()
+
+  // 1回覚醒（高スコア）
+  const goodSleepEvents: Event[] = [{ name: '寝る', datetime: new Date('2026-07-25T23:00:00Z') }]
+  const goodSleepLog = new DayLog(goodSleepEvents)
+  const goodSleepScore = new SleepSummary(goodSleepLog, startAt, endAt).score()
+
+  expect(badSleepScore).toBeLessThan(goodSleepScore)
+})
+
+test('総睡眠時間が同じでも長い睡眠睡眠ブロックがあるほうがスコアが高い', () => {
+  // 総睡眠時間のちょうど半分で覚醒（低スコア）
+  const badSleepEvents: Event[] = [
+    { name: '起きる', datetime: new Date('2026-07-26T03:00:00Z') },
+    { name: '寝る', datetime: new Date('2026-07-26T03:05:00Z') },
+  ]
+  const badSleepLog = new DayLog(badSleepEvents)
+  const badSleepScore = new SleepSummary(badSleepLog, startAt, endAt).score()
+
+  // 前半の睡眠が長くとれた（中程度のスコア）
+  const sleepEvents: Event[] = [
+    { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
+    { name: '寝る', datetime: new Date('2026-07-26T05:05:00Z') },
+  ]
+  const sleepLog = new DayLog(sleepEvents)
+  const sleepScore = new SleepSummary(sleepLog, startAt, endAt).score()
+
+  // 中途覚醒なし（高スコア）
+  const goodSleepEvents: Event[] = [{ name: '寝る', datetime: new Date('2026-07-25T22:05:00Z') }]
+  const goodSleepLog = new DayLog(goodSleepEvents)
+  const goodSleepScore = new SleepSummary(goodSleepLog, startAt, endAt).score()
+
+  expect(badSleepScore).toBeLessThan(sleepScore)
+  expect(sleepScore).toBeLessThan(goodSleepScore)
+})
+
+test('覚醒回数がおなじでも覚醒時間が少ない方がスコアが高い', () => {
+  // 覚醒が長い（低スコア）
+  const badSleepEvents: Event[] = [
+    { name: '起きる', datetime: new Date('2026-07-26T03:00:00Z') },
+    { name: '寝る', datetime: new Date('2026-07-26T03:10:00Z') },
+  ]
+  const badSleepLog = new DayLog(badSleepEvents)
+  const badSleepScore = new SleepSummary(badSleepLog, startAt, endAt).score()
+
+  // 中程度の覚醒（中程度のスコア）
+  const sleepEvents: Event[] = [
+    { name: '起きる', datetime: new Date('2026-07-26T03:00:00Z') },
+    { name: '寝る', datetime: new Date('2026-07-26T03:05:00Z') },
+  ]
+  const sleepLog = new DayLog(sleepEvents)
+  const sleepScore = new SleepSummary(sleepLog, startAt, endAt).score()
+
+  // 覚醒時間が短い（高スコア）
+  const goodSleepEvents: Event[] = [
+    { name: '起きる', datetime: new Date('2026-07-26T03:00:00Z') },
+    { name: '寝る', datetime: new Date('2026-07-26T03:01:00Z') },
+  ]
+  const goodSleepLog = new DayLog(goodSleepEvents)
+  const goodSleepScore = new SleepSummary(goodSleepLog, startAt, endAt).score()
+
+  expect(badSleepScore).toBeLessThan(sleepScore)
+  expect(sleepScore).toBeLessThan(goodSleepScore)
+})
