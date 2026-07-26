@@ -11,8 +11,8 @@ export class Time {
    * @returns NIGHT_TIME_END を基準とした日付
    **/
   public static nightDate(date: Date) {
-    const hour = getHours(date)
-    if (hour < this.NIGHT_TIME_END) {
+    const range = this.nightTime(subDays(date, 1))
+    if (date < range.end) {
       return subDays(startOfDay(date), 1)
     }
     return startOfDay(date)
