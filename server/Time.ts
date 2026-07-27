@@ -29,14 +29,4 @@ export class Time {
       end: addHours(addDays(startOfDay(date), 1), this.NIGHT_TIME_END),
     }
   }
-
-  /**
-   * 夜時間かどうか判定する
-   * @param date 判定する日時
-   * @returns 夜時間なら true
-   */
-  public static isNightTime(date: Date) {
-    const range = Time.nightTime(date)
-    return date < range.end && date >= range.start
-  }
 }
