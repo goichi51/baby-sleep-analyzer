@@ -35,7 +35,9 @@ export class SleepSummary {
     if (this.summary !== null) {
       return this.summary
     }
-    const nightEvents = this.log.events.filter((e) => Time.isNightTime(e.datetime))
+    const nightEvents = this.log.events.filter(
+      (e) => this.nightTimeStart <= e.datetime && e.datetime < this.nightTimeEnd,
+    )
     if (nightEvents.length == 0) {
       const sleepSession = [
         {
@@ -107,6 +109,7 @@ export class SleepSummary {
         end: this.nightTimeEnd,
         duration: differenceInMinutes(this.nightTimeEnd, lastEvent.datetime) / 60,
       })
+      awakenings++
     }
     if (lastEvent.name === '寝る') {
       // 起きたのは endAt 以降

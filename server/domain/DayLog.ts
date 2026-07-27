@@ -1,3 +1,4 @@
+import { tzDate } from '../tzDate.ts'
 import { Event } from './dto/event.ts'
 
 export class DayLog {
@@ -39,7 +40,7 @@ export class DayLog {
 
         // 対象イベントに含まれるか判定
         if (TARGET_EVENTS.includes(eventName)) {
-          const datetime = new Date(`${currentDateStr} ${timeStr}`)
+          const datetime = tzDate(`${currentDateStr} ${timeStr}`)
 
           events.push(new Event(eventName, datetime))
         }

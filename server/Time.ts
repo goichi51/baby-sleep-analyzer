@@ -1,4 +1,4 @@
-import { addHours, getHours, addDays, startOfDay, subDays } from 'date-fns'
+import { addHours, addDays, startOfDay, subDays } from 'date-fns'
 
 export class Time {
   private static NIGHT_TIME_START = 22
@@ -37,6 +37,6 @@ export class Time {
    */
   public static isNightTime(date: Date) {
     const range = Time.nightTime(date)
-    return date < range.end || date >= range.start
+    return date < range.end && date >= range.start
   }
 }

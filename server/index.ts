@@ -7,6 +7,7 @@ import { db } from './db/client.ts'
 import { addDays, startOfDay, format } from 'date-fns'
 import { Time } from './Time.ts'
 import { SleepSummary } from './domain/SleepSummary.ts'
+import { tzDate } from './tzDate.ts'
 
 const app = new Hono()
 const repo: EventRepository = new EventRepositoryImpl(db)
@@ -30,7 +31,7 @@ app.post('api/events', async (c) => {
  */
 app.get('api/events', async (c) => {
   const { date } = c.req.query() // YYYY-MM-DD
-  const since = startOfDay(new Date(date))
+  const since = startOfDay(tzDate(date))
   const until = addDays(since, 1)
   const events = await repo.findByDate(since, until)
   return c.json({ events })
@@ -39,15 +40,14 @@ app.get('api/events', async (c) => {
 app.get('api/events/ranking', async (c) => {
   const { since, until, num = 5 } = c.req.query() // YYYY-MM-DD, until を含む
   const events = await repo.findByDate(
-    startOfDay(new Date(since)),
-    addDays(startOfDay(new Date(until)), 1),
+    startOfDay(tzDate(since)),
+    addDays(startOfDay(tzDate(until)), 1),
   )
-
   const dateEventsMap = Map.groupBy(events, ({ datetime }) =>
     format(Time.nightDate(datetime), 'yyyy-MM-dd'),
   )
   const summaries = dateEventsMap.entries().map(([date, events]) => {
-    const { start, end } = Time.nightTime(startOfDay(new Date(date)))
+    const { start, end } = Time.nightTime(startOfDay(tzDate(date)))
     return new SleepSummary(new DayLog(events), start, end)
   })
   const sorted = Array.from(summaries).sort((a, b) => b.score() - a.score())
