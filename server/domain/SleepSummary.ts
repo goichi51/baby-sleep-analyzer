@@ -1,4 +1,3 @@
-import { Time } from '../Time.ts'
 import { DayLog } from './DayLog.ts'
 import { differenceInMinutes } from 'date-fns'
 
@@ -24,12 +23,7 @@ export class SleepSummary {
   ) {}
 
   /*
-    startAt から endAt の間の睡睡を要約する
-    例）22:00から翌6:00のスコアを計算するとする
-    1:00~1:30, 5:00~6:00 に覚醒した場合
-    sleepingTime: [3, 3.5]
-    awakenings: 2
-    awakeningTime: [0.5, 1]
+    nightTimeStart から nightTimeEnd の間の睡睡を要約する
   */
   public summarize() {
     if (this.summary !== null) {
@@ -123,10 +117,14 @@ export class SleepSummary {
     return this.summary
   }
 
+  /**
+   * 睡眠のスコアを計算する
+   * - 各睡眠時間が長いほど（覚醒が少ないほど）高スコア
+   * - 覚醒時間が短いほど高スコア
+   * @returns スコア
+   */
   public score() {
     const { sleepSession, awakeSession, awakenings } = this.summarize()
-    // - 各睡眠時間が長いほど（覚醒が少ないほど）高スコア
-    // - 覚醒時間が短いほど高スコア
     const sleepScore = sleepSession.reduce(
       (prev, current) => prev + current.duration * current.duration,
       0,
