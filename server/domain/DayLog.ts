@@ -1,13 +1,18 @@
 import { tzDate } from '../tzDate.ts'
 import { Event } from './dto/event.ts'
 
+export interface Range {
+  since: Date
+  until: Date
+}
+
 export class DayLog {
-  constructor(public events: Event[]) {}
+  constructor(public events: Event[] = []) {}
 
   public static create(text: string) {
     const events: Event[] = []
     // 対象とするイベント名の定義
-    const TARGET_EVENTS = ['寝る', '起きる', '母乳', '搾母乳', '離乳食']
+    const TARGET_EVENTS = ['寝る', '起きる', '母乳', '搾母乳', 'ミルク', '離乳食']
 
     // 日付ヘッダーの正規表現: 例 "2026/7/1(水)"
     const dateHeaderRegex = /^(\d{4}\/\d{1,2}\/\d{1,2})\(/
@@ -47,5 +52,22 @@ export class DayLog {
       }
     }
     return new DayLog(events)
+  }
+
+  public getRange(): Range {
+    let since: Date | null = null
+    let until: Date | null = null
+    this.events.forEach((e) => {
+      if (since === null || since > e.datetime) {
+        since = e.datetime
+      }
+      if (until === null || until < e.datetime) {
+        until = e.datetime
+      }
+    })
+    if (since === null || until === null) {
+      throw new Error('no events') // TODO
+    }
+    return { since, until }
   }
 }

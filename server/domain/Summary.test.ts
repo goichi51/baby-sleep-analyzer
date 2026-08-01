@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest'
 import { Event } from './dto/event.ts'
 import { DayLog } from './DayLog.ts'
-import { SleepSummary } from './SleepSummary.ts'
+import { Summary } from './Summary.ts'
 
 const startAt = new Date('2026-07-25T22:00:00Z')
 const endAt = new Date('2026-07-26T06:00:00Z')
@@ -15,7 +15,7 @@ describe('summarize', () => {
       { name: '寝る', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
     const input = new DayLog(events)
-    const summary = new SleepSummary(input, startAt, endAt).summarize()
+    const summary = new Summary(input, startAt, endAt).computeNightSleep()
     expect(summary.sleepSession).toEqual([
       {
         start: new Date('2026-07-25T22:00:00Z'),
@@ -50,7 +50,7 @@ describe('summarize', () => {
 
   test('startAt 以前に入眠、endAt 以降に覚醒（途中覚醒なし)', () => {
     const input = new DayLog([])
-    const summary = new SleepSummary(input, startAt, endAt).summarize()
+    const summary = new Summary(input, startAt, endAt).computeNightSleep()
     expect(summary.sleepSession).toEqual([
       {
         start: new Date('2026-07-25T22:00:00Z'),
@@ -69,7 +69,7 @@ describe('summarize', () => {
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
     const input = new DayLog(events)
-    const summary = new SleepSummary(input, startAt, endAt).summarize()
+    const summary = new Summary(input, startAt, endAt).computeNightSleep()
     expect(summary.sleepSession).toEqual([
       {
         start: new Date('2026-07-25T23:00:00Z'),
@@ -108,7 +108,7 @@ describe('summarize', () => {
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
     const input = new DayLog(events)
-    const summary = new SleepSummary(input, startAt, endAt).summarize()
+    const summary = new Summary(input, startAt, endAt).computeNightSleep()
     expect(summary.sleepSession).toEqual([
       {
         start: new Date('2026-07-25T23:00:00Z'),
@@ -141,12 +141,12 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
     const input = new DayLog(events)
-    expect(new SleepSummary(input, startAt, endAt).score()).toEqual(122.5)
+    expect(new Summary(input, startAt, endAt).computeScore()).toEqual(122.5)
   })
 
   test('startAt 以前に入眠、endAt 以降に覚醒（途中覚醒なし)', () => {
     const input = new DayLog([])
-    expect(new SleepSummary(input, startAt, endAt).score()).toEqual(640)
+    expect(new Summary(input, startAt, endAt).computeScore()).toEqual(640)
   })
 
   test('startAt 以降に入眠、endAt 以前に覚醒（途中覚醒あり）', () => {
@@ -157,7 +157,7 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
     const input = new DayLog(events)
-    expect(new SleepSummary(input, startAt, endAt).score()).toEqual(97.5)
+    expect(new Summary(input, startAt, endAt).computeScore()).toEqual(97.5)
   })
 
   test('startAt 以降に入眠、endAt 以前に覚醒（途中覚醒なし）', () => {
@@ -166,7 +166,7 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
     const input = new DayLog(events)
-    expect(new SleepSummary(input, startAt, endAt).score()).toEqual(310)
+    expect(new Summary(input, startAt, endAt).computeScore()).toEqual(310)
   })
 
   test('総睡眠時間が同じでも覚醒回数が少ないほうがスコアが高い', () => {
@@ -176,12 +176,12 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T05:30:00Z') },
     ]
     const badSleepLog = new DayLog(badSleepEvents)
-    const badSleepScore = new SleepSummary(badSleepLog, startAt, endAt).score()
+    const badSleepScore = new Summary(badSleepLog, startAt, endAt).computeScore()
 
     // 1回覚醒（高スコア）
     const goodSleepEvents: Event[] = [{ name: '寝る', datetime: new Date('2026-07-25T23:00:00Z') }]
     const goodSleepLog = new DayLog(goodSleepEvents)
-    const goodSleepScore = new SleepSummary(goodSleepLog, startAt, endAt).score()
+    const goodSleepScore = new Summary(goodSleepLog, startAt, endAt).computeScore()
 
     expect(badSleepScore).toBeLessThan(goodSleepScore)
   })
@@ -193,7 +193,7 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-26T03:05:00Z') },
     ]
     const badSleepLog = new DayLog(badSleepEvents)
-    const badSleepScore = new SleepSummary(badSleepLog, startAt, endAt).score()
+    const badSleepScore = new Summary(badSleepLog, startAt, endAt).computeScore()
 
     // 前半の睡眠が長くとれた（中程度のスコア）
     const sleepEvents: Event[] = [
@@ -201,12 +201,12 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-26T05:05:00Z') },
     ]
     const sleepLog = new DayLog(sleepEvents)
-    const sleepScore = new SleepSummary(sleepLog, startAt, endAt).score()
+    const sleepScore = new Summary(sleepLog, startAt, endAt).computeScore()
 
     // 中途覚醒なし（高スコア）
     const goodSleepEvents: Event[] = [{ name: '寝る', datetime: new Date('2026-07-25T22:05:00Z') }]
     const goodSleepLog = new DayLog(goodSleepEvents)
-    const goodSleepScore = new SleepSummary(goodSleepLog, startAt, endAt).score()
+    const goodSleepScore = new Summary(goodSleepLog, startAt, endAt).computeScore()
 
     expect(badSleepScore).toBeLessThan(sleepScore)
     expect(sleepScore).toBeLessThan(goodSleepScore)
@@ -219,7 +219,7 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-26T03:10:00Z') },
     ]
     const badSleepLog = new DayLog(badSleepEvents)
-    const badSleepScore = new SleepSummary(badSleepLog, startAt, endAt).score()
+    const badSleepScore = new Summary(badSleepLog, startAt, endAt).computeScore()
 
     // 中程度の覚醒（中程度のスコア）
     const sleepEvents: Event[] = [
@@ -227,7 +227,7 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-26T03:05:00Z') },
     ]
     const sleepLog = new DayLog(sleepEvents)
-    const sleepScore = new SleepSummary(sleepLog, startAt, endAt).score()
+    const sleepScore = new Summary(sleepLog, startAt, endAt).computeScore()
 
     // 覚醒時間が短い（高スコア）
     const goodSleepEvents: Event[] = [
@@ -235,7 +235,7 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-26T03:01:00Z') },
     ]
     const goodSleepLog = new DayLog(goodSleepEvents)
-    const goodSleepScore = new SleepSummary(goodSleepLog, startAt, endAt).score()
+    const goodSleepScore = new Summary(goodSleepLog, startAt, endAt).computeScore()
 
     expect(badSleepScore).toBeLessThan(sleepScore)
     expect(sleepScore).toBeLessThan(goodSleepScore)

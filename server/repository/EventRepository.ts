@@ -1,31 +1,46 @@
-import { MySql2Database } from 'drizzle-orm/mysql2'
+import { MySql2Database, MySql2QueryResultHKT } from 'drizzle-orm/mysql2'
 import { lt, gte, and, asc } from 'drizzle-orm'
 import { events } from '../db/schema.ts'
 import { Event } from '../domain/dto/event.ts'
-import { tzDate } from '../tzDate.ts'
+import { MySqlAsyncTransaction } from 'drizzle-orm/mysql-core'
 
 export interface EventRepository {
-  insert: (entities: Event[]) => void
-  findByDate: (since: Date, until: Date) => Promise<Event[]>
+  insert: (entities: Event[], tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>) => void
+  delete: (since: Date, until: Date, tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>) => void
+  findByDate: (
+    since: Date,
+    until: Date,
+    tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>,
+  ) => Promise<Event[]>
 }
 
 export class EventRepositoryImpl implements EventRepository {
   constructor(private db: MySql2Database) {}
 
-  public insert(entities: Event[]) {
-    return this.db.insert(events).values(entities)
+  public insert(entities: Event[], tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>) {
+    return (tx ?? this.db).insert(events).values(entities)
   }
 
-  public async findByDate(since: Date, until: Date) {
+  public delete(since: Date, until: Date, tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>) {
+    return (tx ?? this.db)
+      .delete(events)
+      .where(and(gte(events.datetime, since), lt(events.datetime, until)))
+  }
+
+  public async findByDate(
+    since: Date,
+    until: Date,
+    tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>,
+  ) {
     return (
-      await this.db
+      await (tx ?? this.db)
         .select()
         .from(events)
         .where(and(gte(events.datetime, since), lt(events.datetime, until)))
         .orderBy(asc(events.datetime))
     ).map((r) => ({
       ...r,
-      datetime: tzDate(r.datetime), // TODO
+      datetime: new Date(r.datetime), // TODO
     }))
   }
 }
