@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { serve } from '@hono/node-server'
-import { PiyologData } from './domain/PiyologData.ts'
+import { PiyologDataCollection } from './domain/PiyologDataCollection.ts'
 import { EventRepository } from './repository/EventRepository.ts'
 import { db } from './db/client.ts'
 import { addDays, startOfDay, format } from 'date-fns'
@@ -9,6 +9,7 @@ import { CustomDate } from './CustomDate.ts'
 import { Summary } from './domain/Summary.ts'
 import { tzDate } from './tzDate.ts'
 import { DiaryRepository } from './repository/DiaryRepository.ts'
+import { PiyologData } from './domain/PiyologData.ts'
 
 const app = new Hono()
 const eventRepo = new EventRepository(db)
@@ -23,7 +24,7 @@ app.get('/api/hello', (c) => {
  */
 app.post('api/events', async (c) => {
   const req = await c.req.json<{ text: string }>()
-  const parsed = PiyologData.parse(req.text)
+  const parsed = PiyologDataCollection.create(req.text)
   const { since, until } = parsed.getRange()
   await db.transaction(async (tx) => {
     await eventRepo.delete(since, until, tx)
@@ -45,10 +46,9 @@ app.get('api/events', async (c) => {
   if (events.length === 0) {
     return c.json({ message: 'Not Found' }, 404)
   }
-  return c.json(new PiyologData(events, diary))
+  return c.json(new PiyologData(events, diary.length > 0 ? diary[0] : null))
 })
 
-// TODO summaryからpiyologdataを分離する
 app.get('api/summaries', async (c) => {
   const { date } = c.req.query() // YYYY-MM-DD
   if (!date) {
@@ -95,6 +95,9 @@ app.get('api/summaries/score', async (c) => {
  */
 app.get('api/summaries/ranking', async (c) => {
   const { since, until, num = 3 } = c.req.query() // YYYY-MM-DD, until を含む
+  if (!since || !until) {
+    return c.json({ message: 'Bad Request' }, 400)
+  }
   const events = await eventRepo.findByDateRange(tzDate(since), addDays(tzDate(until), 1))
   // 朝6時を基準とした日付でグルーピング
   const dateEventsMap = Map.groupBy(events, ({ datetime }) =>

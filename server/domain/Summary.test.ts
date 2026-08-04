@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { Event } from './dto/Event.ts'
-import { PiyologData } from './PiyologData.ts'
+import { PiyologDataCollection } from './PiyologDataCollection.ts'
 import { Summary } from './Summary.ts'
 
 const startAt = new Date('2026-07-25T22:00:00Z')
@@ -14,7 +14,7 @@ describe('summarize', () => {
       { name: '起きる', datetime: new Date('2026-07-26T04:00:00Z') },
       { name: '寝る', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
-    const input = new PiyologData(events, [])
+    const input = new PiyologDataCollection(events, [])
     const summary = new Summary(input, startAt, endAt).computeNightSleep()
     expect(summary.sleepSession).toEqual([
       {
@@ -49,7 +49,7 @@ describe('summarize', () => {
   })
 
   test('startAt 以前に入眠、endAt 以降に覚醒（途中覚醒なし)', () => {
-    const input = new PiyologData([], [])
+    const input = new PiyologDataCollection([], [])
     const summary = new Summary(input, startAt, endAt).computeNightSleep()
     expect(summary.sleepSession).toEqual([
       {
@@ -68,7 +68,7 @@ describe('summarize', () => {
       { name: '寝る', datetime: new Date('2026-07-26T01:30:00Z') },
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
-    const input = new PiyologData(events, [])
+    const input = new PiyologDataCollection(events, [])
     const summary = new Summary(input, startAt, endAt).computeNightSleep()
     expect(summary.sleepSession).toEqual([
       {
@@ -107,7 +107,7 @@ describe('summarize', () => {
       { name: '寝る', datetime: new Date('2026-07-25T23:00:00Z') },
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
-    const input = new PiyologData(events, [])
+    const input = new PiyologDataCollection(events, [])
     const summary = new Summary(input, startAt, endAt).computeNightSleep()
     expect(summary.sleepSession).toEqual([
       {
@@ -140,12 +140,12 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T04:00:00Z') },
       { name: '寝る', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
-    const input = new PiyologData(events, [])
+    const input = new PiyologDataCollection(events, [])
     expect(new Summary(input, startAt, endAt).computeScore()).toEqual(122.5)
   })
 
   test('startAt 以前に入眠、endAt 以降に覚醒（途中覚醒なし)', () => {
-    const input = new PiyologData([], [])
+    const input = new PiyologDataCollection([], [])
     expect(new Summary(input, startAt, endAt).computeScore()).toEqual(640)
   })
 
@@ -156,7 +156,7 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-26T01:30:00Z') },
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
-    const input = new PiyologData(events, [])
+    const input = new PiyologDataCollection(events, [])
     expect(new Summary(input, startAt, endAt).computeScore()).toEqual(97.5)
   })
 
@@ -165,7 +165,7 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-25T23:00:00Z') },
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
     ]
-    const input = new PiyologData(events, [])
+    const input = new PiyologDataCollection(events, [])
     expect(new Summary(input, startAt, endAt).computeScore()).toEqual(310)
   })
 
@@ -175,12 +175,12 @@ describe('score', () => {
       { name: '寝る', datetime: new Date('2026-07-25T22:30:00Z') },
       { name: '起きる', datetime: new Date('2026-07-26T05:30:00Z') },
     ]
-    const badSleepLog = new PiyologData(badSleepEvents, [])
+    const badSleepLog = new PiyologDataCollection(badSleepEvents, [])
     const badSleepScore = new Summary(badSleepLog, startAt, endAt).computeScore()
 
     // 1回覚醒（高スコア）
     const goodSleepEvents: Event[] = [{ name: '寝る', datetime: new Date('2026-07-25T23:00:00Z') }]
-    const goodSleepLog = new PiyologData(goodSleepEvents, [])
+    const goodSleepLog = new PiyologDataCollection(goodSleepEvents, [])
     const goodSleepScore = new Summary(goodSleepLog, startAt, endAt).computeScore()
 
     expect(badSleepScore).toBeLessThan(goodSleepScore)
@@ -192,7 +192,7 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T03:00:00Z') },
       { name: '寝る', datetime: new Date('2026-07-26T03:05:00Z') },
     ]
-    const badSleepLog = new PiyologData(badSleepEvents, [])
+    const badSleepLog = new PiyologDataCollection(badSleepEvents, [])
     const badSleepScore = new Summary(badSleepLog, startAt, endAt).computeScore()
 
     // 前半の睡眠が長くとれた（中程度のスコア）
@@ -200,12 +200,12 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T05:00:00Z') },
       { name: '寝る', datetime: new Date('2026-07-26T05:05:00Z') },
     ]
-    const sleepLog = new PiyologData(sleepEvents, [])
+    const sleepLog = new PiyologDataCollection(sleepEvents, [])
     const sleepScore = new Summary(sleepLog, startAt, endAt).computeScore()
 
     // 中途覚醒なし（高スコア）
     const goodSleepEvents: Event[] = [{ name: '寝る', datetime: new Date('2026-07-25T22:05:00Z') }]
-    const goodSleepLog = new PiyologData(goodSleepEvents, [])
+    const goodSleepLog = new PiyologDataCollection(goodSleepEvents, [])
     const goodSleepScore = new Summary(goodSleepLog, startAt, endAt).computeScore()
 
     expect(badSleepScore).toBeLessThan(sleepScore)
@@ -218,7 +218,7 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T03:00:00Z') },
       { name: '寝る', datetime: new Date('2026-07-26T03:10:00Z') },
     ]
-    const badSleepLog = new PiyologData(badSleepEvents, [])
+    const badSleepLog = new PiyologDataCollection(badSleepEvents, [])
     const badSleepScore = new Summary(badSleepLog, startAt, endAt).computeScore()
 
     // 中程度の覚醒（中程度のスコア）
@@ -226,7 +226,7 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T03:00:00Z') },
       { name: '寝る', datetime: new Date('2026-07-26T03:05:00Z') },
     ]
-    const sleepLog = new PiyologData(sleepEvents, [])
+    const sleepLog = new PiyologDataCollection(sleepEvents, [])
     const sleepScore = new Summary(sleepLog, startAt, endAt).computeScore()
 
     // 覚醒時間が短い（高スコア）
@@ -234,7 +234,7 @@ describe('score', () => {
       { name: '起きる', datetime: new Date('2026-07-26T03:00:00Z') },
       { name: '寝る', datetime: new Date('2026-07-26T03:01:00Z') },
     ]
-    const goodSleepLog = new PiyologData(goodSleepEvents, [])
+    const goodSleepLog = new PiyologDataCollection(goodSleepEvents, [])
     const goodSleepScore = new Summary(goodSleepLog, startAt, endAt).computeScore()
 
     expect(badSleepScore).toBeLessThan(sleepScore)
