@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import type { Score } from '@/type/score.ts'
 import SummaryCard from './SummaryCard.vue'
-import type { Summary } from '@/type/ranking.ts'
+import type { Summary } from '@/type/summary.ts'
 import HeatMapCalender from './HeatMapCalender.vue'
+import EventCard from './EventCard.vue'
+import type { Log } from '@/type/log.ts'
 
 defineProps<{
   scores: Score[]
   summary: Summary | null
+  log: Log | null
 }>()
 
 const selected = defineModel({ type: String, required: true })
@@ -14,9 +17,8 @@ const selected = defineModel({ type: String, required: true })
 <template>
   <div class="d-flex ga-5 flex-column">
     <HeatMapCalender v-model="selected" :scores />
-    <div v-if="summary">
-      <SummaryCard :summary />
-    </div>
+    <SummaryCard v-if="summary" :summary />
+    <EventCard v-if="log" :log />
     <div v-else>データがありません</div>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Session, Summary } from '@/type/ranking'
+import type { Session, Summary } from '@/type/summary'
 import { format } from 'date-fns'
 import { computed } from 'vue'
 
@@ -48,7 +48,7 @@ const item = computed(() => {
       <div>夜間睡眠の入眠時刻： {{ item.lastSleepingTime }}</div>
       <div>夜間睡眠時間: {{ item.nightSummary.total }}</div>
       <div>夜間覚醒回数： {{ item.nightSummary.awakenings }}</div>
-      <v-data-table hide-default-footer :items="item.nightSummary.sleepSession"></v-data-table>
+      <v-data-table hide-default-footer :items="item.nightSummary.sleepSession" />
     </v-card-text>
   </v-card>
 </template>

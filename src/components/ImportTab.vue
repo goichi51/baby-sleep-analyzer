@@ -5,18 +5,22 @@ import TheSnackBar from './TheSnackBar.vue'
 
 const eventLog = ref('')
 const snackbar = ref(false)
+const snackbarMessage = ref('')
 
 const importEventLog = async () => {
-  // TODO エラーハンドリング
-  const { data } = await useFetch(`/api/events`).post({ text: eventLog.value }).json()
-  console.log(data)
+  const { error } = await useFetch(`/api/events`).post({ text: eventLog.value }).json()
+  if (error.value) {
+    snackbarMessage.value = 'データのインポートに失敗しました'
+  } else {
+    snackbarMessage.value = 'データのインポートが完了しました'
+  }
   eventLog.value = ''
   snackbar.value = true
 }
 </script>
 <template>
   <div class="my-6">
-    <TheSnackBar v-model="snackbar" message="データのインポートが完了しました" />
+    <TheSnackBar v-model="snackbar" :message="snackbarMessage" />
     <div class="text-headline-medium my-2">育児記録</div>
     ぴよログのメニュー > 記録の出力 > データのエクスポート で出力したデータを貼り付けてください。
     <v-textarea v-model="eventLog" />

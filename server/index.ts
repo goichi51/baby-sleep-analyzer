@@ -1,16 +1,18 @@
 import { Hono } from 'hono'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { serve } from '@hono/node-server'
-import { DayLog } from './domain/DayLog.ts'
-import { EventRepository, EventRepositoryImpl } from './repository/EventRepository.ts'
+import { PiyologData } from './domain/PiyologData.ts'
+import { EventRepository } from './repository/EventRepository.ts'
 import { db } from './db/client.ts'
 import { addDays, startOfDay, format } from 'date-fns'
-import { Time } from './Time.ts'
+import { CustomDate } from './CustomDate.ts'
 import { Summary } from './domain/Summary.ts'
 import { tzDate } from './tzDate.ts'
+import { DiaryRepository } from './repository/DiaryRepository.ts'
 
 const app = new Hono()
-const repo: EventRepository = new EventRepositoryImpl(db)
+const eventRepo = new EventRepository(db)
+const diaryRepo = new DiaryRepository(db)
 
 app.get('/api/hello', (c) => {
   return c.json({ message: 'Hello from Backend!' })
@@ -21,13 +23,13 @@ app.get('/api/hello', (c) => {
  */
 app.post('api/events', async (c) => {
   const req = await c.req.json<{ text: string }>()
-  console.log(req.text)
-  const parsed = DayLog.create(req.text)
+  const parsed = PiyologData.parse(req.text)
   const { since, until } = parsed.getRange()
-  console.log({ since, until })
   await db.transaction(async (tx) => {
-    await repo.delete(startOfDay(since), addDays(startOfDay(until), 1), tx)
-    await repo.insert(parsed.events, tx)
+    await eventRepo.delete(since, until, tx)
+    await eventRepo.insert(parsed.events, tx)
+    await diaryRepo.delete(since, until, tx)
+    await diaryRepo.insert(parsed.diary, tx)
   })
   return c.json({ result: 'ok' })
 })
@@ -35,40 +37,48 @@ app.post('api/events', async (c) => {
 /**
  * date で指定された日の出来事を取得する
  */
-// app.get('api/events', async (c) => {
-//   const { date } = c.req.query() // YYYY-MM-DD
-//   const { start, end } = Time.shiftedTime(new Date(date))
-//   console.log(start, end)
-//   const events = await repo.findByDate(start, end)
-//   return c.json(events)
-// })
-
-app.get('api/summaries', async (c) => {
+app.get('api/events', async (c) => {
   const { date } = c.req.query() // YYYY-MM-DD
-  const timeRange = Time.shiftedTime(new Date(date))
-  const events = await repo.findByDate(timeRange.start, timeRange.end)
+  const { start, end } = CustomDate.getDayRange(new Date(date))
+  const events = await eventRepo.findByDateRange(start, end)
+  const diary = await diaryRepo.findByDate(startOfDay(new Date(date)))
   if (events.length === 0) {
     return c.json({ message: 'Not Found' }, 404)
   }
-  const nightTimeRange = Time.nightTime(new Date(date))
-  const summary = new Summary(new DayLog(events), nightTimeRange.start, nightTimeRange.end)
+  return c.json(new PiyologData(events, diary))
+})
+
+// TODO summaryからpiyologdataを分離する
+app.get('api/summaries', async (c) => {
+  const { date } = c.req.query() // YYYY-MM-DD
+  if (!date) {
+    return c.json({ message: 'Bad Request' }, 400)
+  }
+  const timeRange = CustomDate.getDayRange(new Date(date))
+  const events = await eventRepo.findByDateRange(timeRange.start, timeRange.end)
+  if (events.length === 0) {
+    return c.json({ message: 'Not Found' }, 404)
+  }
+  const nightTimeRange = CustomDate.getNightTime(new Date(date))
+  const summary = new Summary(events, nightTimeRange.start, nightTimeRange.end)
   return c.json(summary)
 })
 
 app.get('api/summaries/score', async (c) => {
-  const { since, until } = c.req.query() // YYYY-MM-DD, until を含む
-  // TODO shiftedtimeを使う
-  const events = await repo.findByDate(tzDate(since), addDays(tzDate(until), 1))
+  const { since, until } = c.req.query() // YYYY-MM-DD, until を期間に含む
+  if (!since || !until) {
+    return c.json({ message: 'Bad Request' }, 400)
+  }
+  const customDateSince = CustomDate.getDayRange(since).start
+  const customDateUntil = CustomDate.getDayRange(until).end
+  const events = await eventRepo.findByDateRange(customDateSince, customDateUntil)
   // 朝6時を基準とした日付でグルーピング
   const dateEventsMap = Map.groupBy(events, ({ datetime }) =>
-    format(Time.shiftedDate(datetime), 'yyyy-MM-dd'),
+    format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
   )
-  // untilの次の日の分のデータは不要のため削除
-  dateEventsMap.delete(format(addDays(tzDate(until), 1), 'yyyy-MM-dd'))
-
   const summaries = dateEventsMap.entries().map(([date, events]) => {
-    const { start, end } = Time.nightTime(startOfDay(tzDate(date)))
-    return new Summary(new DayLog(events), start, end)
+    const { start, end } = CustomDate.getNightTime(date)
+    return new Summary(events, start, end)
   })
   return c.json(
     Array.from(
@@ -85,17 +95,17 @@ app.get('api/summaries/score', async (c) => {
  */
 app.get('api/summaries/ranking', async (c) => {
   const { since, until, num = 3 } = c.req.query() // YYYY-MM-DD, until を含む
-  const events = await repo.findByDate(tzDate(since), addDays(tzDate(until), 1))
+  const events = await eventRepo.findByDateRange(tzDate(since), addDays(tzDate(until), 1))
   // 朝6時を基準とした日付でグルーピング
   const dateEventsMap = Map.groupBy(events, ({ datetime }) =>
-    format(Time.shiftedDate(datetime), 'yyyy-MM-dd'),
+    format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
   )
   // untilの次の日の分のデータは不要のため削除
   dateEventsMap.delete(format(addDays(tzDate(until), 1), 'yyyy-MM-dd'))
 
   const summaries = dateEventsMap.entries().map(([date, events]) => {
-    const { start, end } = Time.nightTime(startOfDay(tzDate(date)))
-    return new Summary(new DayLog(events), start, end)
+    const { start, end } = CustomDate.getNightTime(startOfDay(tzDate(date)))
+    return new Summary(events, start, end)
   })
   const sorted = Array.from(summaries).sort((a, b) => b.computeScore() - a.computeScore())
   return c.json({

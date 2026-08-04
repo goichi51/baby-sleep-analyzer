@@ -1,6 +1,5 @@
-import { DayLog } from './DayLog.ts'
 import { differenceInMinutes, subDays } from 'date-fns'
-import { Event } from './dto/event.ts'
+import { Event } from './dto/Event.ts'
 
 interface Session {
   start: Date
@@ -8,34 +7,42 @@ interface Session {
   duration: number
 }
 
-interface NightSummary {
-  sleepSession: Session[] // 睡眠時間(h)
-  awakenings: number // 覚醒回数
-  awakeSession: Session[] // 覚醒時間(h)
-  total: number // 総睡眠時間(h)
+class NightSummary {
+  constructor(
+    public sleepSession: Session[], // 睡眠時間(h)
+    public awakenings: number, // 覚醒回数
+    public awakeSession: Session[], // 覚醒時間(h)
+    public total: number, // 総睡眠時間(h)
+  ) {}
 }
 
 export class Summary {
-  public readonly nightSummary: NightSummary
-  public readonly score: number
-  public readonly lastFeedingTime: Date
-  public readonly lastSleepingTime: Date
-  public readonly daySleepDuration: number
+  public readonly nightSummary: NightSummary | null = null
+  public readonly score: number | null = null
+  public readonly lastFeedingTime: Date | null = null
+  public readonly lastSleepingTime: Date | null = null
+  public readonly daySleepDuration: number = 0
 
-  private readonly dayEvents: Event[]
-  private readonly nightEvents: Event[]
+  private readonly dayEvents: Event[] = []
+  private readonly nightEvents: Event[] = []
 
   private static feedEvent = ['母乳', 'ミルク', '搾母乳', '離乳食']
 
   constructor(
-    public readonly log: DayLog, // todo Event[]にする
+    public readonly events: Event[],
     public readonly nightTimeStart: Date,
     public readonly nightTimeEnd: Date,
   ) {
+    if (!events || events.length === 0) {
+      return
+    }
     this.dayEvents = this.getDayEvents()
     this.nightEvents = this.getNightEvents()
     this.daySleepDuration = this.computeDaySleep()
     this.nightSummary = this.computeNightSleep()
+    if (this.nightSummary === null) {
+      return
+    }
     this.lastFeedingTime = this.computeLastFeedingTime()
     this.lastSleepingTime = this.computeLastSleepingTime()
     this.score = this.computeScore()
@@ -91,11 +98,13 @@ export class Summary {
       if (e.name === '寝る') {
         if (sleepEnd === null) {
           // 前回寝たのが startAt 以前
-          awakeSession.push({
-            start: this.nightTimeStart,
-            end: e.datetime,
-            duration: this.duration(this.nightTimeStart, e.datetime),
-          })
+          if (e.datetime > this.nightTimeStart) {
+            awakeSession.push({
+              start: this.nightTimeStart,
+              end: e.datetime,
+              duration: this.duration(this.nightTimeStart, e.datetime),
+            })
+          }
         } else {
           awakeSession.push({
             start: sleepEnd,
@@ -169,18 +178,23 @@ export class Summary {
    * @returns 最後の授乳時間
    */
   public computeLastFeedingTime() {
-    const summary = this.nightSummary
-    const firstSleepStart = summary.sleepSession[0].start
-    const event = this.log.events.findLast(
+    // TODO length=0となる場合について
+    if (this.nightSummary === null || this.nightSummary.sleepSession.length === 0) return null
+    const firstSleepStart = this.nightSummary.sleepSession[0].start
+    const event = this.events.findLast(
       (e) => e.datetime < firstSleepStart && Summary.feedEvent.includes(e.name),
     )
     if (event === undefined) {
-      throw new Error('no feeding event')
+      // TODO 前日のデータがない
+      console.error('no feeding event')
+      return null
     }
     return event.datetime
   }
 
   public computeLastSleepingTime() {
+    // TODO sleepSession=0の場合について
+    if (this.nightSummary === null || this.nightSummary.sleepSession.length === 0) return null
     // 夜時間開始時点で寝ていた場合
     if (this.nightSummary.sleepSession[0].start === this.nightTimeStart) {
       const e = this.nightEvents.find((e) => e.name === '寝る')
@@ -190,7 +204,8 @@ export class Summary {
       }
       // 夜時間前に寝ていた
       const lastSleepStart = this.dayEvents.findLast((e) => e.name === '寝る')
-      return lastSleepStart!.datetime
+      // TODO 前日データがない場合
+      return lastSleepStart?.datetime
     }
     // 夜時間開始時点で寝ていなかった場合
     return this.nightSummary.sleepSession[0].start
@@ -203,6 +218,7 @@ export class Summary {
    * @returns スコア
    */
   public computeScore() {
+    if (this.nightSummary === null) return null
     const { sleepSession, awakeSession, awakenings } = this.nightSummary
     const sleepScore = sleepSession.reduce(
       (prev, current) => prev + current.duration * current.duration,
@@ -227,11 +243,11 @@ export class Summary {
   private getDayEvents() {
     const dayTimeStart = subDays(this.nightTimeEnd, 1)
     const dayTimeEnd = this.nightTimeStart
-    return this.log.events.filter((e) => dayTimeStart <= e.datetime && e.datetime < dayTimeEnd)
+    return this.events.filter((e) => dayTimeStart <= e.datetime && e.datetime < dayTimeEnd)
   }
 
   private getNightEvents() {
-    return this.log.events.filter(
+    return this.events.filter(
       (e) => this.nightTimeStart <= e.datetime && e.datetime < this.nightTimeEnd,
     )
   }
