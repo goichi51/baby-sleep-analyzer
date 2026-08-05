@@ -4,7 +4,7 @@ import { Event } from './dto/Event.ts'
 /**
  * 1日分のぴよろぐデータ
  */
-export class PiyologData {
+export class ChildcareLog {
   constructor(
     public events: Event[],
     public diary: Diary | null,

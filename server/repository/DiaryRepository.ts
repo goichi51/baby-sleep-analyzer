@@ -7,12 +7,19 @@ import { Diary } from '../domain/dto/Diary.ts'
 export class DiaryRepository {
   constructor(private db: MySql2Database) {}
 
-  public insert(entities: Diary[], tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>) {
-    return (tx ?? this.db).insert(diaries).values(entities)
+  public async insert(
+    entities: Diary[],
+    tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>,
+  ): Promise<void> {
+    await (tx ?? this.db).insert(diaries).values(entities)
   }
 
-  public delete(since: Date, until: Date, tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>) {
-    return (tx ?? this.db)
+  public async delete(
+    since: Date,
+    until: Date,
+    tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>,
+  ): Promise<void> {
+    await (tx ?? this.db)
       .delete(diaries)
       .where(and(gte(diaries.date, since), lt(diaries.date, until)))
   }

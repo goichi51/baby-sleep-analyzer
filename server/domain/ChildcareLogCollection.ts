@@ -10,7 +10,7 @@ export interface Range {
 /**
  * ぴよろぐからエクスポートされたデータを読み取り変換する
  */
-export class PiyologDataCollection {
+export class ChildcareLogCollection {
   constructor(
     public events: Event[] = [],
     public diary: Diary[] = [],
@@ -110,11 +110,11 @@ export class PiyologDataCollection {
     // 末尾のメモを確定
     flushDiary()
 
-    return new PiyologDataCollection(events, diaries)
+    return new ChildcareLogCollection(events, diaries)
   }
 
   /**
-   * データの存在する期間を返す(until は期間に含まない)
+   * データの存在する期間（日）を返す(until は期間に含まない)
    * @returns データが存在する期間
    */
   public getRange(): Range {
@@ -131,6 +131,6 @@ export class PiyologDataCollection {
     if (since === null || until === null) {
       throw new Error('no events') // TODO
     }
-    return { since, until: addDays(startOfDay(until), 1) }
+    return { since: startOfDay(since), until: addDays(startOfDay(until), 1) }
   }
 }

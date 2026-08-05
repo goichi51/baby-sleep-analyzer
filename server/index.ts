@@ -1,37 +1,31 @@
 import { Hono } from 'hono'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { serve } from '@hono/node-server'
-import { PiyologDataCollection } from './domain/PiyologDataCollection.ts'
 import { EventRepository } from './repository/EventRepository.ts'
 import { db } from './db/client.ts'
-import { addDays, startOfDay, format } from 'date-fns'
+import { startOfDay } from 'date-fns'
 import { CustomDate } from './CustomDate.ts'
-import { Summary } from './domain/Summary.ts'
-import { tzDate } from './tzDate.ts'
 import { DiaryRepository } from './repository/DiaryRepository.ts'
-import { PiyologData } from './domain/PiyologData.ts'
+import { StateRepository } from './repository/StateRepository.ts'
+import { ChildcareLog } from './domain/ChildcareLog.ts'
+import { SummaryService } from './domain/service/SummaryService.ts'
+import { LogService } from './domain/service/LogService.ts'
+import { getSQLiteColumnBuilders } from 'drizzle-orm/sqlite-core/columns/all'
 
 const app = new Hono()
 const eventRepo = new EventRepository(db)
 const diaryRepo = new DiaryRepository(db)
+const stateRepo = new StateRepository(db)
 
-app.get('/api/hello', (c) => {
-  return c.json({ message: 'Hello from Backend!' })
-})
+const summaryService = new SummaryService(eventRepo)
+const logService = new LogService(eventRepo, diaryRepo, stateRepo, db)
 
 /**
  * ぴよログのデータをインポートする
  */
 app.post('api/events', async (c) => {
   const req = await c.req.json<{ text: string }>()
-  const parsed = PiyologDataCollection.create(req.text)
-  const { since, until } = parsed.getRange()
-  await db.transaction(async (tx) => {
-    await eventRepo.delete(since, until, tx)
-    await eventRepo.insert(parsed.events, tx)
-    await diaryRepo.delete(since, until, tx)
-    await diaryRepo.insert(parsed.diary, tx)
-  })
+  await logService.create(req.text)
   return c.json({ result: 'ok' })
 })
 
@@ -40,13 +34,11 @@ app.post('api/events', async (c) => {
  */
 app.get('api/events', async (c) => {
   const { date } = c.req.query() // YYYY-MM-DD
-  const { start, end } = CustomDate.getDayRange(new Date(date))
-  const events = await eventRepo.findByDateRange(start, end)
-  const diary = await diaryRepo.findByDate(startOfDay(new Date(date)))
-  if (events.length === 0) {
+  const log = logService.findByDate(new Date(date))
+  if (log === null) {
     return c.json({ message: 'Not Found' }, 404)
   }
-  return c.json(new PiyologData(events, diary.length > 0 ? diary[0] : null))
+  return c.json(log)
 })
 
 app.get('api/summaries', async (c) => {
@@ -54,14 +46,11 @@ app.get('api/summaries', async (c) => {
   if (!date) {
     return c.json({ message: 'Bad Request' }, 400)
   }
-  const timeRange = CustomDate.getDayRange(new Date(date))
-  const events = await eventRepo.findByDateRange(timeRange.start, timeRange.end)
-  if (events.length === 0) {
+  const summaries = await summaryService.findByDate(new Date(date), new Date(date))
+  if (summaries.length === 0) {
     return c.json({ message: 'Not Found' }, 404)
   }
-  const nightTimeRange = CustomDate.getNightTime(new Date(date))
-  const summary = new Summary(events, nightTimeRange.start, nightTimeRange.end)
-  return c.json(summary)
+  return c.json(summaries[0])
 })
 
 app.get('api/summaries/score', async (c) => {
@@ -69,25 +58,8 @@ app.get('api/summaries/score', async (c) => {
   if (!since || !until) {
     return c.json({ message: 'Bad Request' }, 400)
   }
-  const customDateSince = CustomDate.getDayRange(since).start
-  const customDateUntil = CustomDate.getDayRange(until).end
-  const events = await eventRepo.findByDateRange(customDateSince, customDateUntil)
-  // 朝6時を基準とした日付でグルーピング
-  const dateEventsMap = Map.groupBy(events, ({ datetime }) =>
-    format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
-  )
-  const summaries = dateEventsMap.entries().map(([date, events]) => {
-    const { start, end } = CustomDate.getNightTime(date)
-    return new Summary(events, start, end)
-  })
   return c.json(
-    Array.from(
-      summaries.map((summary) => ({
-        date: startOfDay(summary.nightTimeStart),
-        score: summary.score,
-      })),
-    ),
-  )
+  await summaryService.getScores(new Date(since), new Date(until))
 })
 
 /**
@@ -98,23 +70,8 @@ app.get('api/summaries/ranking', async (c) => {
   if (!since || !until) {
     return c.json({ message: 'Bad Request' }, 400)
   }
-  const events = await eventRepo.findByDateRange(tzDate(since), addDays(tzDate(until), 1))
-  // 朝6時を基準とした日付でグルーピング
-  const dateEventsMap = Map.groupBy(events, ({ datetime }) =>
-    format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
+  return c.json(summaryService.getRanking(new Date(since), new Date(until), Number(num))
   )
-  // untilの次の日の分のデータは不要のため削除
-  dateEventsMap.delete(format(addDays(tzDate(until), 1), 'yyyy-MM-dd'))
-
-  const summaries = dateEventsMap.entries().map(([date, events]) => {
-    const { start, end } = CustomDate.getNightTime(startOfDay(tzDate(date)))
-    return new Summary(events, start, end)
-  })
-  const sorted = Array.from(summaries).sort((a, b) => b.computeScore() - a.computeScore())
-  return c.json({
-    best: sorted.slice(0, Number(num)),
-    worst: sorted.toReversed().slice(0, Number(num)),
-  })
 })
 
 app.use('/*', serveStatic({ root: './dist' }))
