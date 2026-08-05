@@ -8,7 +8,7 @@ const snackbar = ref(false)
 const snackbarMessage = ref('')
 
 const importEventLog = async () => {
-  const { error } = await useFetch(`/api/events`).post({ text: eventLog.value }).json()
+  const { error } = await useFetch(`/api/logs/piyolog`).post({ text: eventLog.value }).json()
   if (error.value) {
     snackbarMessage.value = 'データのインポートに失敗しました'
   } else {

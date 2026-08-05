@@ -21,7 +21,7 @@ const convertSession = (s: Session) => ({
 const item = computed(() => {
   const nightSummary = {
     ...props.summary.nightSummary,
-    total: floor(props.summary.nightSummary.total),
+    total: props.summary.nightSummary.total ? floor(props.summary.nightSummary.total) : undefined,
   }
   const summary = {
     ...nightSummary,
@@ -43,11 +43,11 @@ const item = computed(() => {
     :title="`${nth ? nth + `. ` : ''}${toDate(item.nightTimeStart)} ${item.score}点`"
   >
     <v-card-text>
-      <div>日中(6~22時)の睡眠時間: {{ item.daySleepDuration }}時間</div>
-      <div>最後のごはん： {{ item.lastFeedingTime }}</div>
-      <div>夜間睡眠の入眠時刻： {{ item.lastSleepingTime }}</div>
-      <div>夜間睡眠時間: {{ item.nightSummary.total }}</div>
-      <div>夜間覚醒回数： {{ item.nightSummary.awakenings }}</div>
+      <div>日中(6~22時)の睡眠時間: {{ item.daySleepDuration ?? '-' }}時間</div>
+      <div>最後のごはん： {{ item.lastFeedingTime ?? '-' }}</div>
+      <div>夜間睡眠の入眠時刻： {{ item.lastSleepingTime ?? '-' }}</div>
+      <div>夜間睡眠時間: {{ item.nightSummary.total ?? '-' }}</div>
+      <div>夜間覚醒回数： {{ item.nightSummary.awakenings ?? '-' }}</div>
       <v-data-table hide-default-footer :items="item.nightSummary.sleepSession" />
     </v-card-text>
   </v-card>

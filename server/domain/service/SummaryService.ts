@@ -4,9 +4,13 @@ import { EventRepository } from '../../repository/EventRepository.ts'
 import { Summary } from '../Summary.ts'
 import { Ranking } from '../dto/Ranking.ts'
 import { Score } from '../dto/Score.ts'
+import { StateRepository } from '../../repository/StateRepository.ts'
 
 export class SummaryService {
-  constructor(private repo: EventRepository) {}
+  constructor(
+    private eventRepo: EventRepository,
+    private stateRepo: StateRepository,
+  ) {}
 
   /**
    * 指定された期間の睡眠情報の要約を返す.
@@ -19,15 +23,23 @@ export class SummaryService {
   public async findByDate(since: Date, until: Date) {
     const customDateSince = CustomDate.getDayRange(since).start
     const customDateUntil = CustomDate.getDayRange(until).end
-    const events = await this.repo.findByDateRange(customDateSince, customDateUntil)
+    const events = await this.eventRepo.findByDateRange(customDateSince, customDateUntil)
+    const states = await this.stateRepo.findByDateRange(
+      startOfDay(customDateSince),
+      customDateUntil,
+    )
     // 朝6時を基準とした日付でグルーピング
     const dateEventsMap = Map.groupBy(events, ({ datetime }) =>
       format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
     )
+    const dateStatesMap = Map.groupBy(states, ({ date }) => format(date, 'yyyy-MM-dd'))
     return Array.from(
       dateEventsMap.entries().map(([date, events]) => {
         const { start, end } = CustomDate.getNightTime(date)
-        return new Summary(events, start, end)
+        const dataExists =
+          dateStatesMap.get(format(start, 'yyyy-MM-dd')) != undefined &&
+          dateStatesMap.get(format(end, 'yyyy-MM-dd')) != undefined
+        return new Summary(events, start, end, dataExists)
       }),
     )
   }

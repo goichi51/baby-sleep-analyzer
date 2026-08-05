@@ -22,8 +22,8 @@ if (summaryStatusCode.value == null || summaryStatusCode.value >= 500) {
   throw new Error() //TODO
 }
 
-const logUrl = computed(() => `/api/summaries?date=${selectedDay.value}`)
-const { data: log, statusCode: logStatusCode } = await useFetch<Log>(logUrl, {
+const logUrl = computed(() => `/api/logs/piyolog?date=${selectedDay.value}`)
+const { data: log = null, statusCode: logStatusCode } = await useFetch<Log>(logUrl, {
   refetch: true,
 }).json()
 if (logStatusCode.value == null || logStatusCode.value >= 500) {

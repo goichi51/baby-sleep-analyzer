@@ -29,7 +29,7 @@ const next = () => {
 }
 
 const dateScoreMap = new Map(
-  (props.scores ?? []).map((s) => [format(s.date, 'yyyy-MM-dd'), s.score]),
+  (props.scores ?? []).map((s) => [format(s.date, 'yyyy-MM-dd'), s.value]),
 )
 
 /**

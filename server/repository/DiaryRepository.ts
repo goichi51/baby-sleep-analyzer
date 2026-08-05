@@ -25,7 +25,6 @@ export class DiaryRepository {
   }
 
   public async findByDate(date: Date, tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>) {
-    console.log({ date })
     return (await (tx ?? this.db).select().from(diaries).where(eq(diaries.date, date))).map(
       (r) =>
         ({

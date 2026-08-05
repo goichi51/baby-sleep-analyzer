@@ -2,11 +2,11 @@ import { MySql2Database } from 'drizzle-orm/mysql2'
 import { DiaryRepository } from '../../repository/DiaryRepository.ts'
 import { StateRepository } from '../../repository/StateRepository.ts'
 import { StateCollection } from '../dto/State.ts'
-import { ChildcareLogCollection } from '../ChildcareLogCollection.ts'
 import { EventRepository } from '../../repository/EventRepository.ts'
 import { CustomDate } from '../../CustomDate.ts'
 import { startOfDay } from 'date-fns'
-import { ChildcareLog } from '../ChildcareLog.ts'
+import { ChildcareLogCollection } from '../ChildcareLogCollection.ts'
+import { ChildcareLog } from '../ChildCareLog.ts'
 
 export class LogService {
   constructor(

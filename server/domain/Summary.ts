@@ -9,15 +9,15 @@ interface Session {
 
 class NightSummary {
   constructor(
-    public sleepSession: Session[], // 睡眠時間(h)
-    public awakenings: number, // 覚醒回数
-    public awakeSession: Session[], // 覚醒時間(h)
-    public total: number, // 総睡眠時間(h)
+    public sleepSession: Session[] = [], // 睡眠時間(h)
+    public awakenings: number | null = null, // 覚醒回数
+    public awakeSession: Session[] = [], // 覚醒時間(h)
+    public total: number | null = null, // 総睡眠時間(h)
   ) {}
 }
 
 export class Summary {
-  public readonly nightSummary: NightSummary | null = null
+  public readonly nightSummary: NightSummary | null = new NightSummary()
   public readonly score: number | null = null
   public readonly lastFeedingTime: Date | null = null
   public readonly lastSleepingTime: Date | null = null
@@ -32,17 +32,13 @@ export class Summary {
     public readonly events: Event[],
     public readonly nightTimeStart: Date,
     public readonly nightTimeEnd: Date,
+    readonly dataExists: boolean,
   ) {
-    if (!events || events.length === 0) {
-      return
-    }
+    if (!dataExists) return
     this.dayEvents = this.getDayEvents()
     this.nightEvents = this.getNightEvents()
     this.daySleepDuration = this.computeDaySleep()
     this.nightSummary = this.computeNightSleep()
-    if (this.nightSummary === null) {
-      return
-    }
     this.lastFeedingTime = this.computeLastFeedingTime()
     this.lastSleepingTime = this.computeLastSleepingTime()
     this.score = this.computeScore()
@@ -193,7 +189,6 @@ export class Summary {
   }
 
   public computeLastSleepingTime() {
-    // TODO sleepSession=0の場合について
     if (this.nightSummary === null || this.nightSummary.sleepSession.length === 0) return null
     // 夜時間開始時点で寝ていた場合
     if (this.nightSummary.sleepSession[0].start === this.nightTimeStart) {

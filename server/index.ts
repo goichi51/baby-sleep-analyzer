@@ -3,27 +3,23 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import { serve } from '@hono/node-server'
 import { EventRepository } from './repository/EventRepository.ts'
 import { db } from './db/client.ts'
-import { startOfDay } from 'date-fns'
-import { CustomDate } from './CustomDate.ts'
 import { DiaryRepository } from './repository/DiaryRepository.ts'
 import { StateRepository } from './repository/StateRepository.ts'
-import { ChildcareLog } from './domain/ChildcareLog.ts'
 import { SummaryService } from './domain/service/SummaryService.ts'
 import { LogService } from './domain/service/LogService.ts'
-import { getSQLiteColumnBuilders } from 'drizzle-orm/sqlite-core/columns/all'
 
 const app = new Hono()
 const eventRepo = new EventRepository(db)
 const diaryRepo = new DiaryRepository(db)
 const stateRepo = new StateRepository(db)
 
-const summaryService = new SummaryService(eventRepo)
+const summaryService = new SummaryService(eventRepo, stateRepo)
 const logService = new LogService(eventRepo, diaryRepo, stateRepo, db)
 
 /**
  * ぴよログのデータをインポートする
  */
-app.post('api/events', async (c) => {
+app.post('api/logs/piyolog', async (c) => {
   const req = await c.req.json<{ text: string }>()
   await logService.create(req.text)
   return c.json({ result: 'ok' })
@@ -32,9 +28,9 @@ app.post('api/events', async (c) => {
 /**
  * date で指定された日の出来事を取得する
  */
-app.get('api/events', async (c) => {
+app.get('api/logs/piyolog', async (c) => {
   const { date } = c.req.query() // YYYY-MM-DD
-  const log = logService.findByDate(new Date(date))
+  const log = await logService.findByDate(new Date(date))
   if (log === null) {
     return c.json({ message: 'Not Found' }, 404)
   }
@@ -58,8 +54,7 @@ app.get('api/summaries/score', async (c) => {
   if (!since || !until) {
     return c.json({ message: 'Bad Request' }, 400)
   }
-  return c.json(
-  await summaryService.getScores(new Date(since), new Date(until))
+  return c.json(await summaryService.getScores(new Date(since), new Date(until)))
 })
 
 /**
@@ -70,8 +65,7 @@ app.get('api/summaries/ranking', async (c) => {
   if (!since || !until) {
     return c.json({ message: 'Bad Request' }, 400)
   }
-  return c.json(summaryService.getRanking(new Date(since), new Date(until), Number(num))
-  )
+  return c.json(summaryService.getRanking(new Date(since), new Date(until), Number(num)))
 })
 
 app.use('/*', serveStatic({ root: './dist' }))
