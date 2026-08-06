@@ -23,11 +23,15 @@ export default defineConfig({
     }),
   ],
   server: {
+    host: '0.0.0.0',
     port: 5173,
     proxy: {
       // フロントから /api/xxx にアクセスしたら、Honoサーバー(port 3000)に飛ばす
       '/api': 'http://localhost:3000',
     },
+    watch: {
+      usePolling: true
+    }
   },
   resolve: {
     alias: {
