@@ -1,5 +1,5 @@
-import { Diary } from './dto/Diary.ts'
-import { Event } from './dto/Event.ts'
+import { Diary } from './Diary.ts'
+import { Event } from './Event.ts'
 
 /**
  * 1日分のぴよろぐデータ

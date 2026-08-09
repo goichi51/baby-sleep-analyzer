@@ -10,13 +10,13 @@ defineProps<{
   scores: Score[]
   summary: Summary | null
   log: Log | null
+  selected: string
 }>()
 
-const selected = defineModel({ type: String, required: true })
 </script>
 <template>
   <div class="d-flex ga-5 flex-column">
-    <HeatMapCalender v-model="selected" :scores />
+    <HeatMapCalender :selected :scores />
     <SummaryCard v-if="summary" :summary />
     <EventCard v-if="log" :log />
     <div v-else>データがありません</div>

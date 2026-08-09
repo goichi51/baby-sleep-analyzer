@@ -1,27 +1,24 @@
 <script setup lang="ts">
 import type { Score } from '@/type/score'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { format } from 'date-fns'
+import router from '@/router';
 
 const props = defineProps<{
   scores: Score[]
+  selected: string
 }>()
 
-/**
- * 選択している日付
- */
-const selected = defineModel({ type: String, required: true })
-
+const today = format(new Date(), 'yyyy-MM-dd')
+const selectedDay = ref(props.selected)
 const calendar = ref()
 
-const today = format(new Date(), 'yyyy-MM-dd')
 const setToday = () => {
-  selected.value = today
+  router.push({path: '/' })
 }
 
 const prev = () => {
   calendar.value.prev()
-  // TODO emit
 }
 
 const next = () => {
@@ -31,6 +28,10 @@ const next = () => {
 const dateScoreMap = new Map(
   (props.scores ?? []).map((s) => [format(s.date, 'yyyy-MM-dd'), s.value]),
 )
+
+watch(selectedDay, (newValue) => {
+  router.push({path:'/', query: {date: newValue}})
+})
 
 /**
  * 睡眠スコアが低いと赤に近づき、高いと緑に近づく
@@ -64,7 +65,7 @@ const getBgColor = (date: string) => {
         </v-toolbar>
       </v-sheet>
       <v-sheet height="600">
-        <v-calendar ref="calendar" v-model="selected" :now="today">
+        <v-calendar ref="calendar" v-model="selectedDay" :now="today">
           <template v-slot:day="{ date }">
             <div class="day-background-layer" :style="{ backgroundColor: getBgColor(date) }" />
           </template>

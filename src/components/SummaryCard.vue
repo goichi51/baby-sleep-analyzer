@@ -28,11 +28,12 @@ const item = computed(() => {
     sleepSession: nightSummary.sleepSession.map((s) => convertSession(s)),
     awakeSession: nightSummary.awakeSession.map((s) => convertSession(s)),
   }
+  const {daySleepDuration, lastFeedingTime, lastSleepingTime} = props.summary
   return {
     ...props.summary,
-    daySleepDuration: floor(props.summary.daySleepDuration),
-    lastFeedingTime: toDatetime(props.summary.lastFeedingTime),
-    lastSleepingTime: toDatetime(props.summary.lastSleepingTime),
+    daySleepDuration: daySleepDuration ? floor(daySleepDuration) : null,
+    lastFeedingTime: lastFeedingTime ? toDatetime(lastFeedingTime): null,
+    lastSleepingTime: lastSleepingTime ? toDatetime(lastSleepingTime): null,
     nightSummary: summary,
   }
 })
@@ -40,7 +41,7 @@ const item = computed(() => {
 <template>
   <v-card
     variant="tonal"
-    :title="`${nth ? nth + `. ` : ''}${toDate(item.nightTimeStart)} ${item.score}点`"
+    :title="`${nth ? nth + `. ` : ''}${toDate(item.nightTimeStart)} ${item.score ?? '-'}点`"
   >
     <v-card-text>
       <div>日中(6~22時)の睡眠時間: {{ item.daySleepDuration ?? '-' }}時間</div>

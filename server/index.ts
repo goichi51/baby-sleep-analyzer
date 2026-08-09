@@ -70,4 +70,4 @@ app.get('api/summaries/ranking', async (c) => {
 
 app.use('/*', serveStatic({ root: './dist' }))
 
-serve({ fetch: app.fetch, port: 3000 })
+serve({ fetch: app.fetch, port: 3000  })

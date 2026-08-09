@@ -21,7 +21,7 @@ export class Summary {
   public readonly score: number | null = null
   public readonly lastFeedingTime: Date | null = null
   public readonly lastSleepingTime: Date | null = null
-  public readonly daySleepDuration: number = 0
+  public readonly daySleepDuration: number | null = null
 
   private readonly dayEvents: Event[] = []
   private readonly nightEvents: Event[] = []

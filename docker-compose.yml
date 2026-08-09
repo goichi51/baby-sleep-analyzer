@@ -1,8 +1,8 @@
-version: '3.8'
-
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "5173:5173"
     volumes:
@@ -10,3 +10,44 @@ services:
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true 
+      - DATABASE_URL=mysql2://app:app_password@db:3306/sleep_analyzer
+    depends_on:
+      db:
+        condition: service_healthy 
+      migration:
+        condition: service_completed_successfully
+    
+  migration:
+    build: .
+    command: npx drizzle-kit migrate
+    environment:
+      - DATABASE_URL=mysql2://app:app_password@db:3306/sleep_analyzer
+    depends_on:
+      db:
+        condition: service_healthy 
+
+
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    command: --default-authentication-plugin=mysql_native_password # クライアント接続互換性のため
+    ports:
+      - "3306:3306" # ホストPCのGUIツール（DBeaverやTablePlusなど）から接続する場合に開放
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-}
+      MYSQL_DATABASE: sleep_analyzer        
+      MYSQL_USER: app 
+      MYSQL_PASSWORD: app_password
+      TZ: "Asia/Tokyo"
+    volumes:
+      - db-data:/var/lib/mysql # データを永続化（コンテナ削除時もデータを保持）
+      # - ./docker/mysql/init:/docker-entrypoint-initdb.d # 初回起動時に実行したい.sqlファイルを配置する場合
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    
+volumes:
+  db-data:

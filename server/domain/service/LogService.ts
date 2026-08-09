@@ -6,7 +6,7 @@ import { EventRepository } from '../../repository/EventRepository.ts'
 import { CustomDate } from '../../CustomDate.ts'
 import { startOfDay } from 'date-fns'
 import { ChildcareLogCollection } from '../ChildcareLogCollection.ts'
-import { ChildcareLog } from '../ChildCareLog.ts'
+import { ChildcareLog } from '../dto/ChildcareLog.ts'
 
 export class LogService {
   constructor(
