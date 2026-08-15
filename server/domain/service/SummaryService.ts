@@ -2,7 +2,6 @@ import { format, startOfDay } from 'date-fns'
 import { CustomDate } from '../../CustomDate.ts'
 import { EventRepository } from '../../repository/EventRepository.ts'
 import { Summary } from '../Summary.ts'
-import { Ranking } from '../dto/Ranking.ts'
 import { Score } from '../dto/Score.ts'
 import { StateRepository } from '../../repository/StateRepository.ts'
 import { ClimateLogRepository } from '../../repository/ClimateLogRepository.ts'
@@ -48,15 +47,6 @@ export class SummaryService {
         return new Summary(events, climateLog, start, end, dataExists)
       }),
     )
-  }
-
-  public async getRanking(since: Date, until: Date, num: number) {
-    const summaries = await this.findByDate(new Date(since), new Date(until))
-    const sorted = summaries.sort((a, b) => {
-      if (!a.score || !b.score) return 0
-      return b.score - a.score
-    })
-    return new Ranking(sorted.slice(0, Number(num)), sorted.toReversed().slice(0, Number(num)))
   }
 
   public async getScores(since: Date, until: Date) {

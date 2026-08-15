@@ -3,7 +3,6 @@ import { ref } from 'vue'
 
 const tabs = [
   { value: 'list', path: '/', label: '一覧' },
-  { value: 'ranking', path: '/ranking', label: 'ランキング' },
   { value: 'import', path: '/import', label: 'データ連携' },
 ]
 const selectedTab = ref('list')

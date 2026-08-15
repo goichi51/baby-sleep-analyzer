@@ -83,17 +83,6 @@ app.get('api/summaries/score', async (c) => {
   return c.json(await summaryService.getScores(new Date(since), new Date(until)))
 })
 
-/**
- * 朝6時を基準として日毎に睡眠のスコアを集計し、上位/下位 num 個のデータを返す、
- */
-app.get('api/summaries/ranking', async (c) => {
-  const { since, until, num = 3 } = c.req.query() // YYYY-MM-DD, until を含む
-  if (!since || !until) {
-    return c.json({ message: 'Bad Request' }, 400)
-  }
-  return c.json(summaryService.getRanking(new Date(since), new Date(until), Number(num)))
-})
-
 app.use('/*', serveStatic({ root: './dist' }))
 
 serve({ fetch: app.fetch, port: 3000 })
