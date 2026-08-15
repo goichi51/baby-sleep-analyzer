@@ -1,5 +1,4 @@
-import { datetime, date } from 'drizzle-orm/mssql-core'
-import { int, mysqlTable, varchar, primaryKey, double } from 'drizzle-orm/mysql-core'
+import { int, mysqlTable, varchar, primaryKey, double, date, datetime } from 'drizzle-orm/mysql-core'
 
 export const events = mysqlTable('events', {
   id: int().primaryKey().autoincrement(),
@@ -17,14 +16,14 @@ export const states = mysqlTable(
   'states',
   {
     type: varchar({ length: 10, enum: ['childcare', 'climate'] }).notNull(),
-    date: date().notNull(),
+    datetime: datetime().notNull(),
   },
-  (table) => ({
-    pk: primaryKey({ columns: [table.type, table.date] }),
-  }),
+  (table) => ([
+    primaryKey({ columns: [table.type, table.datetime] }),
+  ]),
 )
 
-export const room_climate_logs = mysqlTable(
+export const roomClimateLogs = mysqlTable(
   'room_climate_logs',
   {
     datetime: datetime().primaryKey(),

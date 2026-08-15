@@ -1,5 +1,6 @@
 import { differenceInMinutes, subDays } from 'date-fns'
 import { Event } from './dto/Event.ts'
+import { ClimateLog } from './dto/ClimateLog.ts'
 
 interface Session {
   start: Date
@@ -13,7 +14,7 @@ class NightSummary {
     public awakenings: number | null = null, // 覚醒回数
     public awakeSession: Session[] = [], // 覚醒時間(h)
     public total: number | null = null, // 総睡眠時間(h)
-  ) {}
+  ) { }
 }
 
 export class Summary {
@@ -22,6 +23,8 @@ export class Summary {
   public readonly lastFeedingTime: Date | null = null
   public readonly lastSleepingTime: Date | null = null
   public readonly daySleepDuration: number | null = null
+  public readonly avgTemperature: number | null = null
+  public readonly haveWalk: boolean | null = null
 
   private readonly dayEvents: Event[] = []
   private readonly nightEvents: Event[] = []
@@ -29,18 +32,21 @@ export class Summary {
   private static feedEvent = ['母乳', 'ミルク', '搾母乳', '離乳食']
 
   constructor(
-    public readonly events: Event[],
+    readonly events: Event[],
+    readonly climateLog: ClimateLog[],
     public readonly nightTimeStart: Date,
     public readonly nightTimeEnd: Date,
     readonly dataExists: boolean,
   ) {
     if (!dataExists) return
-    this.dayEvents = this.getDayEvents()
-    this.nightEvents = this.getNightEvents()
+    this.dayEvents = this.getDayEvents(events)
+    this.nightEvents = this.getNightEvents(events)
     this.daySleepDuration = this.computeDaySleep()
     this.nightSummary = this.computeNightSleep()
-    this.lastFeedingTime = this.computeLastFeedingTime()
+    this.lastFeedingTime = this.computeLastFeedingTime(events)
     this.lastSleepingTime = this.computeLastSleepingTime()
+    this.avgTemperature = this.computeAvgTemperature(climateLog)
+    this.haveWalk = events.some(e => e.name === 'さんぽ')
     this.score = this.computeScore()
   }
 
@@ -113,8 +119,8 @@ export class Summary {
       }
     })
 
-    const lastEvent = this.nightEvents[this.nightEvents.length - 1]
-    if (lastEvent.name === '起きる') {
+    const lastEvent = this.nightEvents.findLast(e => e.name === '起きる' || e.name === '寝る')
+    if (lastEvent?.name === '起きる') {
       // 寝たのは endAt 以降
       awakeSession.push({
         start: lastEvent.datetime,
@@ -123,7 +129,7 @@ export class Summary {
       })
       awakenings++
     }
-    if (lastEvent.name === '寝る') {
+    if (lastEvent?.name === '寝る') {
       // 起きたのは endAt 以降
       sleepSession.push({
         start: lastEvent.datetime,
@@ -173,11 +179,11 @@ export class Summary {
    * 夜の睡眠前の最後の授乳の時間を返す
    * @returns 最後の授乳時間
    */
-  public computeLastFeedingTime() {
+  public computeLastFeedingTime(events: Event[]) {
     // TODO length=0となる場合について
     if (this.nightSummary === null || this.nightSummary.sleepSession.length === 0) return null
     const firstSleepStart = this.nightSummary.sleepSession[0].start
-    const event = this.events.findLast(
+    const event = events.findLast(
       (e) => e.datetime < firstSleepStart && Summary.feedEvent.includes(e.name),
     )
     if (event === undefined) {
@@ -206,6 +212,12 @@ export class Summary {
     return this.nightSummary.sleepSession[0].start
   }
 
+  public computeAvgTemperature(log: ClimateLog[]) {
+    const filtered = log
+      .filter(l => this.nightTimeStart <= l.datetime && l.datetime < this.nightTimeEnd)
+    return filtered.reduce((prev, current) => prev + current.temperature, 0) / filtered.length
+  }
+
   /**
    * 睡眠のスコアを計算する
    * - 各睡眠時間が長いほど（覚醒が少ないほど）高スコア
@@ -232,17 +244,21 @@ export class Summary {
   }
 
   /**
-   * 日中のイベンとを一覧取得する
+   * 日中のイベントを一覧取得する
    * @param events
    */
-  private getDayEvents() {
+  private getDayEvents(events: Event[]) {
     const dayTimeStart = subDays(this.nightTimeEnd, 1)
     const dayTimeEnd = this.nightTimeStart
-    return this.events.filter((e) => dayTimeStart <= e.datetime && e.datetime < dayTimeEnd)
+    return events.filter((e) => dayTimeStart <= e.datetime && e.datetime < dayTimeEnd)
   }
 
-  private getNightEvents() {
-    return this.events.filter(
+  /**
+   * 夜間のイベントを一覧取得する
+   * @returns events
+   */
+  private getNightEvents(events: Event[]) {
+    return events.filter(
       (e) => this.nightTimeStart <= e.datetime && e.datetime < this.nightTimeEnd,
     )
   }

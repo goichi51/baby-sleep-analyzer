@@ -5,22 +5,28 @@ import { useFetch } from '@vueuse/core'
 import { endOfMonth, format, startOfMonth } from 'date-fns'
 import { computed, ref } from 'vue'
 import ListTab from '@/components/ListTab.vue'
-import type { Log } from '@/type/log'
 import { useRoute } from 'vue-router'
-
-const toDateStr = (date: Date) => format(date, 'yyyy-MM-dd')
+import type { ChildcareLog, ClimateLog } from '@/type/log'
+import { toIsoDate } from '@/utils/date'
 
 const route = useRoute()
-const selectedDay = computed(() => route.query.date && route.query.date.length > 0 ? new Date(route.query.date as string) : new Date())
-const selectedDayStr = computed(() => toDateStr(selectedDay.value))
+const selectedDay = computed(() =>
+  route.query.date && route.query.date.length > 0
+    ? new Date(route.query.date as string)
+    : new Date(),
+)
+const selectedDayStr = computed(() => toIsoDate(selectedDay.value))
 const range = computed(() => {
- const since =  toDateStr(startOfMonth(selectedDay.value))
- const until = toDateStr(endOfMonth(selectedDay.value))
- return { since, until }
+  const since = toIsoDate(startOfMonth(selectedDay.value))
+  const until = toIsoDate(endOfMonth(selectedDay.value))
+  return { since, until }
 })
 
-const scoreUrl = computed(() => `/api/summaries/score?since=${range.value.since}&until=${range.value.until}`)
-const { data: scores } = await useFetch<Score[]>(scoreUrl, { refetch: true }).json()
+const summariesUrl = computed(() => `/api/summaries?since=${range.value.since}&until=${range.value.until}`)
+const { data: summaries, statusCode: summariesStatusCode } = await useFetch<Summary>(summariesUrl, {
+  refetch: true,
+}).json()
+
 
 
 const summaryUrl = computed(() => `/api/summaries?date=${selectedDayStr.value}`)
@@ -32,17 +38,23 @@ if (summaryStatusCode.value == null || summaryStatusCode.value >= 500) {
   throw new Error() //TODO
 }
 
-const logUrl = computed(() => `/api/logs/piyolog?date=${selectedDayStr.value}`)
-const { data: log = null, statusCode: logStatusCode } = await useFetch<Log>(logUrl, {
+const childcareLogUrl = computed(() => `/api/logs/childcare?date=${selectedDayStr.value}`)
+const { data: childcareLog = null, statusCode: childcareLogStatusCode } = await useFetch<ChildcareLog>(childcareLogUrl, {
   refetch: true,
 }).json()
-if (logStatusCode.value == null || logStatusCode.value >= 500) {
-  throw new Error() 
+if (childcareLogStatusCode.value == null || childcareLogStatusCode.value >= 500) {
+  throw new Error()
+}
+
+const climateLogUrl = computed(() => `/api/logs/climate?date=${selectedDayStr.value}`)
+const { data: climateLog = null, statusCode: climateLogStatusCode } = await useFetch<ClimateLog>(climateLogUrl, {
+  refetch: true,
+}).json()
+if (climateLogStatusCode.value == null || climateLogStatusCode.value >= 500) {
+  throw new Error()
 }
 </script>
 
 <template>
-  {{ range.since }}
-  {{  range.until }}
-  <ListTab :scores :summary :log :selected="selectedDayStr"></ListTab>
+  <ListTab :summary :summaries :childcareLog="childcareLog" :climateLog="climateLog" :selected="selectedDayStr"></ListTab>
 </template>

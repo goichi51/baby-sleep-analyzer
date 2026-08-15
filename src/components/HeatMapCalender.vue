@@ -2,10 +2,12 @@
 import type { Score } from '@/type/score'
 import { ref, watch } from 'vue'
 import { format } from 'date-fns'
-import router from '@/router';
+import router from '@/router'
+import type { Summary } from '@/type/summary';
+import { toDisplayTime } from '@/utils/date';
 
 const props = defineProps<{
-  scores: Score[]
+  summaries: Summary[]
   selected: string
 }>()
 
@@ -14,7 +16,7 @@ const selectedDay = ref(props.selected)
 const calendar = ref()
 
 const setToday = () => {
-  router.push({path: '/' })
+  router.push({ path: '/' })
 }
 
 const prev = () => {
@@ -25,12 +27,12 @@ const next = () => {
   calendar.value.next()
 }
 
-const dateScoreMap = new Map(
-  (props.scores ?? []).map((s) => [format(s.date, 'yyyy-MM-dd'), s.value]),
+const dateSummaryMap = new Map(
+  props.summaries.map((s) => [format(s.nightTimeStart, 'yyyy-MM-dd'), s]),
 )
 
 watch(selectedDay, (newValue) => {
-  router.push({path:'/', query: {date: newValue}})
+  router.push({ path: '/', query: { date: newValue } })
 })
 
 /**
@@ -38,7 +40,7 @@ watch(selectedDay, (newValue) => {
  * @param date
  */
 const getBgColor = (date: string) => {
-  const score = dateScoreMap.get(date)!
+  const score = dateSummaryMap.get(date)?.score
   if (!score) {
     return 'rgba(0, 0, 0, 0)'
   }
@@ -48,8 +50,14 @@ const getBgColor = (date: string) => {
 }
 </script>
 <template>
+<div class="d-flex flex-sm-wrap ga-4">
+      <span><v-icon icon="mdi-food-fork-drink" size="small"/>：日中最後のごはんの時間</span>
+      <span><v-icon icon="mdi-sleep" size="small"/>：夜間睡眠に入った時間</span>
+      <span><v-icon icon="mdi-shoe-print" size="small"/>：さんぽの有無</span>
+      <span><v-icon icon="mdi-thermometer" size="small"/>：夜間帯の平均気温</span>
+    </div>
   <v-row class="fill-height">
-    <v-col style="max-width: 800px">
+    <v-col class="w-100">
       <v-sheet height="64">
         <v-toolbar flat>
           <v-btn color="primary" class="mx-4" variant="outlined" @click="setToday"> Today </v-btn>
@@ -64,10 +72,28 @@ const getBgColor = (date: string) => {
           </v-toolbar-title>
         </v-toolbar>
       </v-sheet>
-      <v-sheet height="600">
+      <v-sheet max-height="600">
         <v-calendar ref="calendar" v-model="selectedDay" :now="today">
           <template v-slot:day="{ date }">
             <div class="day-background-layer" :style="{ backgroundColor: getBgColor(date) }" />
+            <div class="d-flex flex-sm-wrap">
+            <div class="mx-1">
+              <v-icon icon="mdi-food-fork-drink" size="small"/>
+               {{ toDisplayTime(dateSummaryMap.get(date)?.lastFeedingTime) }}
+            </div>
+            <div class="mx-1">
+              <v-icon icon="mdi-sleep" size="small"/>
+               {{ toDisplayTime(dateSummaryMap.get(date)?.lastSleepingTime) }}
+            </div>
+            <div class="mx-1">
+              <v-icon icon="mdi-shoe-print" size="small"/>
+               {{ dateSummaryMap.get(date)?.haveWalk ? '○' : '×' }}
+            </div>
+            <div class="mx-1">
+              <v-icon icon="mdi-thermometer" size="small"/>
+               {{ dateSummaryMap.get(date)?.avgTemperature ? Math.floor(dateSummaryMap.get(date)!.avgTemperature! * 10) / 10  : '-'}}
+            </div>
+          </div>
           </template>
         </v-calendar>
       </v-sheet>

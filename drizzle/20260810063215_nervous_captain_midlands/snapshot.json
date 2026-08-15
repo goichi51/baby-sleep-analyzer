@@ -1,9 +1,9 @@
 {
   "version": "6",
   "dialect": "mysql",
-  "id": "309a9919-1dd3-4237-aa20-99d3ba8ac323",
+  "id": "d7c0ef78-047f-4380-8476-8f7ecde088ee",
   "prevIds": [
-    "2658d5e1-1f5e-4da0-adc9-97966f840594"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -12,6 +12,10 @@
     },
     {
       "name": "events",
+      "entityType": "tables"
+    },
+    {
+      "name": "room_climate_logs",
       "entityType": "tables"
     },
     {
@@ -103,6 +107,48 @@
       "table": "events"
     },
     {
+      "type": "datetime",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "datetime",
+      "entityType": "columns",
+      "table": "room_climate_logs"
+    },
+    {
+      "type": "double",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "temperature",
+      "entityType": "columns",
+      "table": "room_climate_logs"
+    },
+    {
+      "type": "double",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "humidity",
+      "entityType": "columns",
+      "table": "room_climate_logs"
+    },
+    {
       "type": "varchar(10)",
       "notNull": true,
       "autoIncrement": false,
@@ -117,7 +163,7 @@
       "table": "states"
     },
     {
-      "type": "date",
+      "type": "datetime",
       "notNull": true,
       "autoIncrement": false,
       "default": null,
@@ -126,14 +172,14 @@
       "charSet": null,
       "collation": null,
       "generated": null,
-      "name": "date",
+      "name": "datetime",
       "entityType": "columns",
       "table": "states"
     },
     {
       "columns": [
         "type",
-        "date"
+        "datetime"
       ],
       "name": "PRIMARY",
       "table": "states",
@@ -153,6 +199,14 @@
       ],
       "name": "PRIMARY",
       "table": "events",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "datetime"
+      ],
+      "name": "PRIMARY",
+      "table": "room_climate_logs",
       "entityType": "pks"
     }
   ],

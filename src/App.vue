@@ -9,7 +9,7 @@ const tabs = [
 const selectedTab = ref('list')
 </script>
 <template>
-  <main class="w-100">
+  <main class="w-75 mx-auto">
     <suspense>
       <v-card>
         <v-tabs
@@ -31,3 +31,6 @@ const selectedTab = ref('list')
     </suspense>
   </main>
 </template>
+<style scoped>
+
+</style>

@@ -1,4 +1,4 @@
-import { format, startOfHour } from "date-fns";
+import { addDays, addHours, format, startOfDay, startOfHour } from "date-fns";
 import { ClimateLog } from "./dto/ClimateLog.ts";
 
 /**
@@ -9,11 +9,11 @@ import { ClimateLog } from "./dto/ClimateLog.ts";
  * 2026-07-21 17:03,29.4,49,17.5,2.08,14.34
  */
 export class ClimateLogCollection {
-    constructor(logs: ClimateLog[]) {}
+    constructor(public logs: ClimateLog[]) {}
 
-public create(csvText: string): ClimateLog[] {
+public static create(csvText: string): ClimateLogCollection {
   const lines = csvText.trim().split(/\r?\n/);
-  if (lines.length <= 1) return [];
+  if (lines.length <= 1) return new ClimateLogCollection([]);
 
   // ヘッダー行を除外
   const dataLines = lines.slice(1);
@@ -43,8 +43,24 @@ public create(csvText: string): ClimateLog[] {
       logs.push(new ClimateLog(startOfHour(date), temperature, humidity));
     }
   }
-
-  return logs;
+  return new ClimateLogCollection(logs);
 }
+  
+public getPeriod() {
+    let since: Date | null = null
+    let until: Date | null = null
+    this.logs.forEach((e) => {
+      if (since === null || since > e.datetime) {
+        since = e.datetime
+      }
+      if (until === null || until < e.datetime) {
+        until = e.datetime
+      }
+    })
+    if (since === null || until === null) {
+      throw new Error('no logs') // TODO
+    }
+    return { since, until: addHours(until, 1) } 
+  }
 
 }

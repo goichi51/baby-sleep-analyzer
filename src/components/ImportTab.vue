@@ -3,18 +3,31 @@ import { useFetch } from '@vueuse/core'
 import { ref } from 'vue'
 import TheSnackBar from './TheSnackBar.vue'
 
-const eventLog = ref('')
+const childcareLog = ref('')
+const climateLog = ref('')
+
 const snackbar = ref(false)
 const snackbarMessage = ref('')
 
-const importEventLog = async () => {
-  const { error } = await useFetch(`/api/logs/piyolog`).post({ text: eventLog.value }).json()
+const importChildcareLog = async () => {
+  const { error } = await useFetch(`/api/logs/childcare`).post({ text: childcareLog.value }).json()
   if (error.value) {
-    snackbarMessage.value = 'データのインポートに失敗しました'
+    snackbarMessage.value = 'ぴよログのデータのインポートに失敗しました'
   } else {
-    snackbarMessage.value = 'データのインポートが完了しました'
+    snackbarMessage.value = 'ぴよログのデータのインポートが完了しました'
+    childcareLog.value = ''
   }
-  eventLog.value = ''
+  snackbar.value = true
+}
+
+const importClimateLog = async () => {
+  const { error } = await useFetch(`/api/logs/climate`).post({ text: climateLog.value }).json()
+  if (error.value) {
+    snackbarMessage.value = 'switch bot のデータのインポートに失敗しました'
+  } else {
+    snackbarMessage.value = 'switch bot のデータのインポートが完了しました'
+    climateLog.value = ''
+  }
   snackbar.value = true
 }
 </script>
@@ -23,9 +36,13 @@ const importEventLog = async () => {
     <TheSnackBar v-model="snackbar" :message="snackbarMessage" />
     <div class="text-headline-medium my-2">育児記録</div>
     ぴよログのメニュー > 記録の出力 > データのエクスポート で出力したデータを貼り付けてください。
-    <v-textarea v-model="eventLog" />
-    <v-btn size="large" variant="outlined" @click="importEventLog">Import</v-btn>
+    <v-textarea v-model="childcareLog" />
+    <v-btn size="large" variant="outlined" @click="importChildcareLog">Import</v-btn>
   </div>
-  <div class="text-headline-medium py-2">気温・湿度</div>
-  <v-textarea class="my-3" />
+  <div class="my-6">
+    <div class="text-headline-medium py-2">気温・湿度</div>
+    switch bot の温湿度計 > データエクスポート で出力したデータを貼り付けてください。
+    <v-textarea v-model="climateLog" />
+    <v-btn size="large" variant="outlined" @click="importClimateLog">Import</v-btn>
+  </div>
 </template>

@@ -2,7 +2,7 @@ import { addDays, startOfDay } from 'date-fns'
 import { Diary } from './dto/Diary.ts'
 import { Event } from './dto/Event.ts'
 
-export interface Range {
+export interface Period {
   since: Date
   until: Date
 }
@@ -117,7 +117,7 @@ export class ChildcareLogCollection {
    * データの存在する期間（日）を返す(until は期間に含まない)
    * @returns データが存在する期間
    */
-  public getRange(): Range {
+  public getPeriod(): Period {
     let since: Date | null = null
     let until: Date | null = null
     this.events.forEach((e) => {

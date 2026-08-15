@@ -4,21 +4,21 @@ import SummaryCard from './SummaryCard.vue'
 import type { Summary } from '@/type/summary.ts'
 import HeatMapCalender from './HeatMapCalender.vue'
 import EventCard from './EventCard.vue'
-import type { Log } from '@/type/log.ts'
+import type { ChildcareLog, ClimateLog } from '@/type/log.ts'
 
 defineProps<{
-  scores: Score[]
+  summaries: Summary[]
   summary: Summary | null
-  log: Log | null
+  childcareLog: ChildcareLog | null
+  climateLog: ClimateLog[] | null // TODO 配列にしない
   selected: string
 }>()
-
 </script>
 <template>
   <div class="d-flex ga-5 flex-column">
-    <HeatMapCalender :selected :scores />
-    <SummaryCard v-if="summary" :summary />
-    <EventCard v-if="log" :log />
+    <HeatMapCalender :selected :summaries/>
+    <SummaryCard v-if="summary" :summary :logs="climateLog" />
+    <EventCard v-if="childcareLog" :log="childcareLog" />
     <div v-else>データがありません</div>
   </div>
 </template>

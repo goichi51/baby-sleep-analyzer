@@ -15,8 +15,8 @@ export class CustomDate {
    **/
   public static getDate(date: Date | string) {
     const d = this.toDate(date)
-    const range = this.getDayRange(d)
-    return d < range.start ? subDays(d, 1) : d
+    const period = this.getDayPeriod(d)
+    return d < period.start ? subDays(d, 1) : d
   }
 
   /**
@@ -25,7 +25,7 @@ export class CustomDate {
    * @returns 夜時間の開始時刻と終了時刻(end は期間に含まない）
    */
   // TODO 名前
-  public static getDayRange(date: Date | string) {
+  public static getDayPeriod(date: Date | string) {
     const d = this.toStartOfDay(date)
     return {
       start: addHours(d, this.DAY_TIME_START),

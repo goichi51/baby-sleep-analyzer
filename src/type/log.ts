@@ -9,7 +9,13 @@ export interface Diary {
   text: string
 }
 
-export interface Log {
+export interface ChildcareLog {
   events: Event[]
   diary: Diary | null
+}
+
+export interface ClimateLog {
+  datetime: string
+  temperature: number
+  humidity: number
 }

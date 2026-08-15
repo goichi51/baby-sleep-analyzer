@@ -5,12 +5,14 @@ import { Summary } from '../Summary.ts'
 import { Ranking } from '../dto/Ranking.ts'
 import { Score } from '../dto/Score.ts'
 import { StateRepository } from '../../repository/StateRepository.ts'
+import { ClimateLogRepository } from '../../repository/ClimateLogRepository.ts'
 
 export class SummaryService {
   constructor(
     private eventRepo: EventRepository,
+    private climateLogRepo: ClimateLogRepository,
     private stateRepo: StateRepository,
-  ) {}
+  ) { }
 
   /**
    * 指定された期間の睡眠情報の要約を返す.
@@ -21,9 +23,11 @@ export class SummaryService {
    * @returns Summary
    */
   public async findByDate(since: Date, until: Date) {
-    const customDateSince = CustomDate.getDayRange(since).start
-    const customDateUntil = CustomDate.getDayRange(until).end
+    const customDateSince = CustomDate.getDayPeriod(since).start
+    const customDateUntil = CustomDate.getDayPeriod(until).end
+
     const events = await this.eventRepo.findByDateRange(customDateSince, customDateUntil)
+    const climateLog = await this.climateLogRepo.findByDateRange(customDateSince, customDateUntil)
     const states = await this.stateRepo.findByDateRange(
       startOfDay(customDateSince),
       customDateUntil,
@@ -32,6 +36,8 @@ export class SummaryService {
     const dateEventsMap = Map.groupBy(events, ({ datetime }) =>
       format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
     )
+    const dateClimateLogMap = Map.groupBy(climateLog, ({ datetime }) =>
+      format(CustomDate.getDate(datetime), 'yyyy-MM-dd'))
     const dateStatesMap = Map.groupBy(states, ({ date }) => format(date, 'yyyy-MM-dd'))
     return Array.from(
       dateEventsMap.entries().map(([date, events]) => {
@@ -39,7 +45,7 @@ export class SummaryService {
         const dataExists =
           dateStatesMap.get(format(start, 'yyyy-MM-dd')) != undefined &&
           dateStatesMap.get(format(end, 'yyyy-MM-dd')) != undefined
-        return new Summary(events, start, end, dataExists)
+        return new Summary(events, climateLog, start, end, dataExists)
       }),
     )
   }

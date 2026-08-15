@@ -12,9 +12,11 @@ export interface Summary {
     awakeSession: Session[]
     awakenings: number
     total: number
-  }
-  score: number
-  lastFeedingTime: string
-  lastSleepingTime: string
-  daySleepDuration: number
+  } | null
+  score: number | null
+  lastFeedingTime: string | null
+  lastSleepingTime: string | null
+  daySleepDuration: number | null
+  avgTemperature: number | null
+  haveWalk: boolean | null
 }

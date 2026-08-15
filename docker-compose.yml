@@ -11,6 +11,7 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true 
       - DATABASE_URL=mysql2://app:app_password@db:3306/sleep_analyzer
+      - TZ=Asia/Tokyo
     depends_on:
       db:
         condition: service_healthy 
@@ -20,18 +21,20 @@ services:
   migration:
     build: .
     command: npx drizzle-kit migrate
+    volumes:
+      - .:/app
+      - /app/node_modules
     environment:
       - DATABASE_URL=mysql2://app:app_password@db:3306/sleep_analyzer
+      - TZ=Asia/Tokyo
     depends_on:
       db:
         condition: service_healthy 
 
-
-
   db:
     image: mysql:8.0
     container_name: mysql_db
-    command: --default-authentication-plugin=mysql_native_password # クライアント接続互換性のため
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci # クライアント接続互換性のため
     ports:
       - "3306:3306" # ホストPCのGUIツール（DBeaverやTablePlusなど）から接続する場合に開放
     environment:
