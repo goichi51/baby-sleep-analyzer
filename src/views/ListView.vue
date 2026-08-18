@@ -22,7 +22,7 @@ const range = computed(() => {
 })
 
 const summariesUrl = computed(() => `/api/summaries?since=${range.value.since}&until=${range.value.until}`)
-const { data: summaries, statusCode: summariesStatusCode } = await useFetch<Summary>(summariesUrl, {
+const { data: summaries, statusCode: summariesStatusCode } = await useFetch<Summary[]>(summariesUrl, {
   refetch: true,
 }).json()
 

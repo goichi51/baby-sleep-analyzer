@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { format } from 'date-fns'
 import router from '@/router'
 import type { Summary } from '@/type/summary';
@@ -26,9 +26,9 @@ const next = () => {
   calendar.value.next()
 }
 
-const dateSummaryMap = new Map(
+const dateSummaryMap = computed(() => new Map(
   props.summaries.map((s) => [format(s.nightTimeStart, 'yyyy-MM-dd'), s]),
-)
+))
 
 watch(selectedDay, (newValue) => {
   router.push({ path: '/', query: { date: newValue } })
@@ -39,13 +39,18 @@ watch(selectedDay, (newValue) => {
  * @param date
  */
 const getBgColor = (date: string) => {
-  const score = dateSummaryMap.get(date)?.score
+  const score = dateSummaryMap.value.get(date)?.score
   if (!score) {
     return 'rgba(0, 0, 0, 0)'
   }
   const red = Math.min(255 - (score * 255) / 100 + 30, 255)
   const green = Math.min((score * 255) / 100, 255)
   return `rgba(${red}, ${green}, 0, 0.3)`
+}
+
+const doesHaveWalk = (date: string) => {
+  if (!dateSummaryMap.value.get(date)) return '-'
+  return dateSummaryMap.value.get(date) ? '○' : '×'
 }
 </script>
 <template>
@@ -86,7 +91,7 @@ const getBgColor = (date: string) => {
             </div>
             <div class="mx-1">
               <v-icon icon="mdi-shoe-print" size="small"/>
-               {{ dateSummaryMap.get(date)?.haveWalk ? '○' : '×' }}
+               {{ doesHaveWalk(date) }}
             </div>
             <div class="mx-1">
               <v-icon icon="mdi-thermometer" size="small"/>
