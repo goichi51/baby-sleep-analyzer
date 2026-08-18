@@ -54,6 +54,8 @@ const doesHaveWalk = (date: string) => {
 }
 </script>
 <template>
+  <v-card>
+    <v-card-text>
 <div class="d-flex flex-sm-wrap ga-4">
       <span><v-icon icon="mdi-food-fork-drink" size="small"/>：日中最後のごはんの時間</span>
       <span><v-icon icon="mdi-sleep" size="small"/>：夜間睡眠に入った時間</span>
@@ -76,7 +78,7 @@ const doesHaveWalk = (date: string) => {
           </v-toolbar-title>
         </v-toolbar>
       </v-sheet>
-      <v-sheet max-height="600">
+      <v-sheet>
         <v-calendar ref="calendar" v-model="selectedDay" :now="today">
           <template v-slot:day="{ date }">
             <div class="day-background-layer" :style="{ backgroundColor: getBgColor(date) }" />
@@ -103,6 +105,8 @@ const doesHaveWalk = (date: string) => {
       </v-sheet>
     </v-col>
   </v-row>
+</v-card-text>
+</v-card>
 </template>
 <style scoped>
 /* セル全体に背景色を行き渡らせるためのスタイル調整 */
@@ -119,7 +123,7 @@ const doesHaveWalk = (date: string) => {
 <style>
 @media (min-width: 600px) {
   .v-calendar-weekly__day {
-    min-height: 90px !important;
+    min-height: 115px !important;
     padding: 5px;
   }
 }
