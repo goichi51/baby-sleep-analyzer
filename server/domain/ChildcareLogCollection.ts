@@ -1,6 +1,5 @@
 import { addDays, startOfDay } from 'date-fns'
-import { Diary } from './dto/Diary.ts'
-import { Event } from './dto/Event.ts'
+import { Diary, Event } from './dto/ChildcareLog.ts'
 
 export interface Period {
   since: Date
@@ -14,7 +13,7 @@ export class ChildcareLogCollection {
   constructor(
     public events: Event[] = [],
     public diary: Diary[] = [],
-  ) {}
+  ) { }
 
   public static create(text: string) {
     const events: Event[] = []

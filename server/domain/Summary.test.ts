@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { Event } from './dto/Event.ts'
+import { Event } from './dto/ChildcareLog.ts'
 import { ChildcareLogCollection } from './ChildcareLogCollection.ts'
 import { Summary } from './Summary.ts'
 

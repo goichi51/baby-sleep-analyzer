@@ -3,7 +3,6 @@ import { lt, gte, and, asc } from 'drizzle-orm'
 import { roomClimateLogs } from '../db/schema.ts'
 import { MySqlAsyncTransaction } from 'drizzle-orm/mysql-core'
 import { ClimateLog } from '../domain/dto/ClimateLog.ts'
-import { datetime } from 'drizzle-orm/mssql-core'
 
 export class ClimateLogRepository {
   constructor(private db: MySql2Database) { }

@@ -1,11 +1,11 @@
 import { MySql2Database, MySql2QueryResultHKT } from 'drizzle-orm/mysql2'
 import { lt, gte, and, asc } from 'drizzle-orm'
 import { events } from '../db/schema.ts'
-import { Event } from '../domain/dto/Event.ts'
+import { Event } from '../domain/dto/ChildcareLog.ts'
 import { MySqlAsyncTransaction } from 'drizzle-orm/mysql-core'
 
 export class EventRepository {
-  constructor(private db: MySql2Database) {}
+  constructor(private db: MySql2Database) { }
 
   public async insert(
     entities: Event[],

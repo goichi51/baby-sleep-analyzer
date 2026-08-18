@@ -2,10 +2,10 @@ import { MySql2Database, MySql2QueryResultHKT } from 'drizzle-orm/mysql2'
 import { eq, and, gte, lt } from 'drizzle-orm'
 import { diaries } from '../db/schema.ts'
 import { MySqlAsyncTransaction } from 'drizzle-orm/mysql-core'
-import { Diary } from '../domain/dto/Diary.ts'
+import { Diary } from '../domain/dto/ChildcareLog.ts'
 
 export class DiaryRepository {
-  constructor(private db: MySql2Database) {}
+  constructor(private db: MySql2Database) { }
 
   public async insert(
     entities: Diary[],

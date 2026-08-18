@@ -9,7 +9,6 @@ import { ChildcareLogCollection } from '../ChildcareLogCollection.ts'
 import { ChildcareLog } from '../dto/ChildcareLog.ts'
 import { ClimateLogRepository } from '../../repository/ClimateLogRepository.ts'
 import { ClimateLogCollection } from '../ClimateLogCollection.ts'
-import { log } from 'node:console'
 
 export class LogService {
   constructor(

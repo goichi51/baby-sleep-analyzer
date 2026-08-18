@@ -1,5 +1,5 @@
 import { differenceInMinutes, subDays } from 'date-fns'
-import { Event } from './dto/Event.ts'
+import { Event } from './dto/ChildcareLog.ts'
 import { ClimateLog } from './dto/ClimateLog.ts'
 
 interface Session {
