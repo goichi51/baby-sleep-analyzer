@@ -1,0 +1,214 @@
+{
+  "version": "6",
+  "dialect": "mysql",
+  "id": "b5937b5c-aa41-42dc-bba3-495b85522b05",
+  "prevIds": [
+    "d7c0ef78-047f-4380-8476-8f7ecde088ee"
+  ],
+  "ddl": [
+    {
+      "name": "climate_data",
+      "entityType": "tables"
+    },
+    {
+      "name": "diaries",
+      "entityType": "tables"
+    },
+    {
+      "name": "events",
+      "entityType": "tables"
+    },
+    {
+      "name": "states",
+      "entityType": "tables"
+    },
+    {
+      "type": "datetime",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "datetime",
+      "entityType": "columns",
+      "table": "climate_data"
+    },
+    {
+      "type": "double",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "temperature",
+      "entityType": "columns",
+      "table": "climate_data"
+    },
+    {
+      "type": "double",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "humidity",
+      "entityType": "columns",
+      "table": "climate_data"
+    },
+    {
+      "type": "date",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "date",
+      "entityType": "columns",
+      "table": "diaries"
+    },
+    {
+      "type": "varchar(256)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "text",
+      "entityType": "columns",
+      "table": "diaries"
+    },
+    {
+      "type": "int",
+      "notNull": true,
+      "autoIncrement": true,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "events"
+    },
+    {
+      "type": "datetime",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "datetime",
+      "entityType": "columns",
+      "table": "events"
+    },
+    {
+      "type": "varchar(64)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "events"
+    },
+    {
+      "type": "varchar(256)",
+      "notNull": false,
+      "autoIncrement": false,
+      "default": "''",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "memo",
+      "entityType": "columns",
+      "table": "events"
+    },
+    {
+      "type": "varchar(10)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "type",
+      "entityType": "columns",
+      "table": "states"
+    },
+    {
+      "type": "datetime",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "datetime",
+      "entityType": "columns",
+      "table": "states"
+    },
+    {
+      "columns": [
+        "type",
+        "datetime"
+      ],
+      "name": "PRIMARY",
+      "table": "states",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "datetime"
+      ],
+      "name": "PRIMARY",
+      "table": "climate_data",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "date"
+      ],
+      "name": "PRIMARY",
+      "table": "diaries",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "PRIMARY",
+      "table": "events",
+      "entityType": "pks"
+    }
+  ],
+  "renames": []
+}

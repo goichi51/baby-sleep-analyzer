@@ -33,7 +33,7 @@ ChartJS.register(
 
 const props = defineProps<{
     summary: Summary
-    logs: ClimateLog[]
+    log: ClimateLog
 }>()
 
 interface Highlight {
@@ -75,7 +75,7 @@ const eventHighlightPlugin: Plugin<'line'> = {
 }
 
 const temperatureData = computed<ChartData<'line'>>(() => {
-  const data = props.logs.map(log => ({x: log.datetime, y: log.temperature }))
+  const data = props.log.data.map(log => ({x: log.datetime, y: log.temperature }))
   return {
     datasets: [
       {
@@ -88,7 +88,7 @@ const temperatureData = computed<ChartData<'line'>>(() => {
 })
 
 const humidityData = computed<ChartData<'line'>>(() => {
-  const data = props.logs.map(log => ({x: log.datetime, y: log.humidity}))
+  const data = props.log.data.map(log => ({x: log.datetime, y: log.humidity}))
   return {
     datasets: [
       {

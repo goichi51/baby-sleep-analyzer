@@ -14,8 +14,12 @@ export interface ChildcareLog {
   diary: Diary | null
 }
 
-export interface ClimateLog {
+export interface ClimateData {
   datetime: string
   temperature: number
   humidity: number
+}
+
+export interface ClimateLog {
+  data: ClimateData[]
 }

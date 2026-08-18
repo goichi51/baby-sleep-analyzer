@@ -1,17 +1,17 @@
 import { MySql2Database, MySql2QueryResultHKT } from 'drizzle-orm/mysql2'
 import { lt, gte, and, asc } from 'drizzle-orm'
-import { roomClimateLogs } from '../db/schema.ts'
+import { climateData } from '../db/schema.ts'
 import { MySqlAsyncTransaction } from 'drizzle-orm/mysql-core'
-import { ClimateLog } from '../domain/dto/ClimateLog.ts'
+import { ClimateData } from '../domain/dto/ClimateLog.ts'
 
-export class ClimateLogRepository {
+export class ClimateDataRepository {
   constructor(private db: MySql2Database) { }
 
   public async insert(
-    entities: ClimateLog[],
+    entities: ClimateData[],
     tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>,
   ): Promise<void> {
-    await (tx ?? this.db).insert(roomClimateLogs).values(entities)
+    await (tx ?? this.db).insert(climateData).values(entities)
   }
 
   public async delete(
@@ -20,8 +20,8 @@ export class ClimateLogRepository {
     tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>,
   ): Promise<void> {
     await (tx ?? this.db)
-      .delete(roomClimateLogs)
-      .where(and(gte(roomClimateLogs.datetime, since), lt(roomClimateLogs.datetime, until)))
+      .delete(climateData)
+      .where(and(gte(climateData.datetime, since), lt(climateData.datetime, until)))
   }
 
   public async findByDateRange(
@@ -32,9 +32,9 @@ export class ClimateLogRepository {
     return (
       await (tx ?? this.db)
         .select()
-        .from(roomClimateLogs)
-        .where(and(gte(roomClimateLogs.datetime, since), lt(roomClimateLogs.datetime, until)))
-        .orderBy(asc(roomClimateLogs.datetime))
+        .from(climateData)
+        .where(and(gte(climateData.datetime, since), lt(climateData.datetime, until)))
+        .orderBy(asc(climateData.datetime))
     ).map((r) => ({
       temperature: r.temperature,
       humidity: r.humidity,

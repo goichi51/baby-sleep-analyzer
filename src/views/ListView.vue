@@ -55,5 +55,5 @@ if (climateLogStatusCode.value == null || climateLogStatusCode.value >= 500) {
 </script>
 
 <template>
-  <ListTab :summary :summaries :childcareLog="childcareLog" :climateLog="climateLog" :selected="selectedDayStr"></ListTab>
+  <ListTab :summary :summaries :childcareLog="childcareLog" :climateLog="climateLog" :selected="selectedDayStr" />
 </template>

@@ -1,0 +1,1 @@
+RENAME TABLE `room_climate_logs` TO `climate_data`;

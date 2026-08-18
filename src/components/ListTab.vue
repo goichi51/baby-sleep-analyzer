@@ -9,14 +9,14 @@ defineProps<{
   summaries: Summary[]
   summary: Summary | null
   childcareLog: ChildcareLog | null
-  climateLog: ClimateLog[] | null // TODO 配列にしない
+  climateLog: ClimateLog | null
   selected: string
 }>()
 </script>
 <template>
   <div class="d-flex ga-5 flex-column">
     <HeatMapCalender :selected :summaries/>
-    <SummaryCard v-if="summary" :summary :logs="climateLog" />
+    <SummaryCard v-if="summary" :summary :log="climateLog" />
     <EventCard v-if="childcareLog" :log="childcareLog" />
     <div v-else>データがありません</div>
   </div>

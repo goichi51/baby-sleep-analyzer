@@ -7,7 +7,7 @@ import { toDisplayDate, toDisplayTime } from '@/utils/date.ts';
 
 const props = defineProps<{
   summary: Summary
-  logs: ClimateLog[] | null
+  log: ClimateLog | null
   nth?: number
 }>()
 
@@ -72,7 +72,7 @@ const tab = ref(tabs[0]?.value)
             <v-data-table density="compact" hide-default-footer :items="item.nightSummary.sleepSession" />
           </v-tabs-window-item>
           <v-tabs-window-item :value="tabs[1]?.value">
-            <div v-if="logs"><ClimateGraph :logs :summary /></div>
+            <div v-if="log"><ClimateGraph :log="log" :summary /></div>
             <div v-else>データがありません</div>
           </v-tabs-window-item>
         </v-tabs-window>

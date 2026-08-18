@@ -3,12 +3,12 @@ import { CustomDate } from '../../CustomDate.ts'
 import { EventRepository } from '../../repository/EventRepository.ts'
 import { Summary } from '../Summary.ts'
 import { StateRepository } from '../../repository/StateRepository.ts'
-import { ClimateLogRepository } from '../../repository/ClimateLogRepository.ts'
+import { ClimateDataRepository } from '../../repository/ClimateDataRepository.ts'
 
 export class SummaryService {
   constructor(
     private eventRepo: EventRepository,
-    private climateLogRepo: ClimateLogRepository,
+    private climateLogRepo: ClimateDataRepository,
     private stateRepo: StateRepository,
   ) { }
 
@@ -25,7 +25,7 @@ export class SummaryService {
     const customDateUntil = CustomDate.getDayPeriod(until).end
 
     const events = await this.eventRepo.findByDateRange(customDateSince, customDateUntil)
-    const climateLog = await this.climateLogRepo.findByDateRange(customDateSince, customDateUntil)
+    const climateData = await this.climateLogRepo.findByDateRange(customDateSince, customDateUntil)
     const states = await this.stateRepo.findByDateRange(
       startOfDay(customDateSince),
       customDateUntil,
@@ -34,7 +34,7 @@ export class SummaryService {
     const dateEventsMap = Map.groupBy(events, ({ datetime }) =>
       format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
     )
-    const dateClimateLogMap = Map.groupBy(climateLog, ({ datetime }) =>
+    const dateClimateDataMap = Map.groupBy(climateData, ({ datetime }) =>
       format(CustomDate.getDate(datetime), 'yyyy-MM-dd'))
     const dateStatesMap = Map.groupBy(states, ({ date }) => format(date, 'yyyy-MM-dd'))
     return Array.from(
@@ -43,7 +43,8 @@ export class SummaryService {
         const dataExists =
           dateStatesMap.get(format(start, 'yyyy-MM-dd')) != undefined &&
           dateStatesMap.get(format(end, 'yyyy-MM-dd')) != undefined
-        return new Summary(events, climateLog, start, end, dataExists)
+        const climateData = dateClimateDataMap.get(date) ?? []
+        return new Summary(events, climateData, start, end, dataExists)
       }),
     )
   }

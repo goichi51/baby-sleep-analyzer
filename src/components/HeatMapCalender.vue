@@ -49,8 +49,8 @@ const getBgColor = (date: string) => {
 }
 
 const doesHaveWalk = (date: string) => {
-  if (!dateSummaryMap.value.get(date)) return '-'
-  return dateSummaryMap.value.get(date) ? '○' : '×'
+  if (!dateSummaryMap.value.get(date)?.haveWalk === null) return '-'
+  return dateSummaryMap.value.get(date)?.haveWalk ? '○' : '×'
 }
 </script>
 <template>

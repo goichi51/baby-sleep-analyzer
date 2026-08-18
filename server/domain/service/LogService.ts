@@ -7,15 +7,16 @@ import { CustomDate } from '../../CustomDate.ts'
 import { addHours, format, startOfDay } from 'date-fns'
 import { ChildcareLogCollection } from '../ChildcareLogCollection.ts'
 import { ChildcareLog } from '../dto/ChildcareLog.ts'
-import { ClimateLogRepository } from '../../repository/ClimateLogRepository.ts'
+import { ClimateDataRepository } from '../../repository/ClimateDataRepository.ts'
 import { ClimateLogCollection } from '../ClimateLogCollection.ts'
+import { ClimateLog } from '../dto/ClimateLog.ts'
 
 export class LogService {
   constructor(
     private eventRepo: EventRepository,
     private diaryRepo: DiaryRepository,
     private stateRepo: StateRepository,
-    private climateLogRepo: ClimateLogRepository,
+    private climateDataRepo: ClimateDataRepository,
     private db: MySql2Database,
   ) { }
 
@@ -42,9 +43,9 @@ export class LogService {
     const parsed = ClimateLogCollection.create(text)
     const { since, until } = parsed.getPeriod()
     await this.db.transaction(async (tx) => {
-      const logPromise = this.climateLogRepo
+      const logPromise = this.climateDataRepo
         .delete(since, until, tx)
-        .then(() => this.climateLogRepo.insert(parsed.logs, tx))
+        .then(() => this.climateDataRepo.insert(parsed.data, tx))
       const statePromise = this.stateRepo
         .delete(since, until, 'climate', tx)
         .then(() => this.stateRepo.insert(
@@ -71,10 +72,10 @@ export class LogService {
   public async findNightClimateLogByDate(date: Date) {
     const { start, end } = CustomDate.getNightTime(date)
     // 表示の都合上 end まで含めて取るようにする
-    const logs = await this.climateLogRepo.findByDateRange(start, addHours(end, 1))
-    if (logs.length === 0) {
+    const data = await this.climateDataRepo.findByDateRange(start, addHours(end, 1))
+    if (data.length === 0) {
       return null
     }
-    return logs
+    return new ClimateLog(data)
   }
 }

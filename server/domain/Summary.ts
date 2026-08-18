@@ -1,6 +1,6 @@
 import { differenceInMinutes, subDays } from 'date-fns'
 import { Event } from './dto/ChildcareLog.ts'
-import { ClimateLog } from './dto/ClimateLog.ts'
+import { ClimateData } from './dto/ClimateLog.ts'
 
 interface Session {
   start: Date
@@ -30,7 +30,7 @@ export class Summary {
 
   constructor(
     events: Event[],
-    climateLog: ClimateLog[],
+    climateData: ClimateData[],
     public readonly nightTimeStart: Date,
     public readonly nightTimeEnd: Date,
     readonly dataExists: boolean,
@@ -42,7 +42,7 @@ export class Summary {
     this.nightSummary = this.computeNightSleep(nightEvents)
     this.lastFeedingTime = this.computeLastFeedingTime(events)
     this.lastSleepingTime = this.computeLastSleepingTime(dayEvents, nightEvents)
-    this.avgTemperature = this.computeAvgTemperature(climateLog)
+    this.avgTemperature = this.computeAvgTemperature(climateData)
     this.haveWalk = events.some(e => e.name === 'さんぽ')
     this.score = this.computeScore()
   }
@@ -209,9 +209,10 @@ export class Summary {
     return this.nightSummary.sleepSession[0].start
   }
 
-  public computeAvgTemperature(log: ClimateLog[]) {
-    const filtered = log
+  public computeAvgTemperature(data: ClimateData[]) {
+    const filtered = data
       .filter(l => this.nightTimeStart <= l.datetime && l.datetime < this.nightTimeEnd)
+    if (filtered.length === 0) return null
     return filtered.reduce((prev, current) => prev + current.temperature, 0) / filtered.length
   }
 

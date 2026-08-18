@@ -7,13 +7,13 @@ import { DiaryRepository } from './repository/DiaryRepository.ts'
 import { StateRepository } from './repository/StateRepository.ts'
 import { SummaryService } from './domain/service/SummaryService.ts'
 import { LogService } from './domain/service/LogService.ts'
-import { ClimateLogRepository } from './repository/ClimateLogRepository.ts'
+import { ClimateDataRepository } from './repository/ClimateDataRepository.ts'
 
 const app = new Hono()
 const eventRepo = new EventRepository(db)
 const diaryRepo = new DiaryRepository(db)
 const stateRepo = new StateRepository(db)
-const climateLogRepo = new ClimateLogRepository(db)
+const climateLogRepo = new ClimateDataRepository(db)
 
 const summaryService = new SummaryService(eventRepo, climateLogRepo, stateRepo)
 const logService = new LogService(eventRepo, diaryRepo, stateRepo, climateLogRepo, db)

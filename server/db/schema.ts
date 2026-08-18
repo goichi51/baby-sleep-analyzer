@@ -23,8 +23,8 @@ export const states = mysqlTable(
   ]),
 )
 
-export const roomClimateLogs = mysqlTable(
-  'room_climate_logs',
+export const climateData = mysqlTable(
+  'climate_data',
   {
     datetime: datetime().primaryKey(),
     temperature: double().notNull(),
