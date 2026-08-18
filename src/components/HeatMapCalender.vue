@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { Score } from '@/type/score'
 import { ref, watch } from 'vue'
 import { format } from 'date-fns'
 import router from '@/router'

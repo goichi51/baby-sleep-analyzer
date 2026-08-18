@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { Score } from '@/type/score.ts'
 import SummaryCard from './SummaryCard.vue'
 import type { Summary } from '@/type/summary.ts'
 import HeatMapCalender from './HeatMapCalender.vue'

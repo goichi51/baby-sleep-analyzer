@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Summary } from '@/type/summary'
-import type { Score } from '@/type/score'
 import { useFetch } from '@vueuse/core'
 import { endOfMonth, format, startOfMonth } from 'date-fns'
 import { computed, ref } from 'vue'

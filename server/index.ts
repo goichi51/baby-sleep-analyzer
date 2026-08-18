@@ -75,14 +75,6 @@ app.get('api/summaries', async (c) => {
   return c.json(await summaryService.findByDate(new Date(since), new Date(until)))
 })
 
-app.get('api/summaries/score', async (c) => {
-  const { since, until } = c.req.query() // YYYY-MM-DD, until を期間に含む
-  if (!since || !until) {
-    return c.json({ message: 'Bad Request' }, 400)
-  }
-  return c.json(await summaryService.getScores(new Date(since), new Date(until)))
-})
-
 app.use('/*', serveStatic({ root: './dist' }))
 
 serve({ fetch: app.fetch, port: 3000 })

@@ -2,7 +2,6 @@ import { format, startOfDay } from 'date-fns'
 import { CustomDate } from '../../CustomDate.ts'
 import { EventRepository } from '../../repository/EventRepository.ts'
 import { Summary } from '../Summary.ts'
-import { Score } from '../dto/Score.ts'
 import { StateRepository } from '../../repository/StateRepository.ts'
 import { ClimateLogRepository } from '../../repository/ClimateLogRepository.ts'
 
@@ -47,10 +46,5 @@ export class SummaryService {
         return new Summary(events, climateLog, start, end, dataExists)
       }),
     )
-  }
-
-  public async getScores(since: Date, until: Date) {
-    const summaries = await this.findByDate(new Date(since), new Date(until))
-    return summaries.map((summary) => new Score(startOfDay(summary.nightTimeStart), summary.score))
   }
 }
