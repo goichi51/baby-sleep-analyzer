@@ -14,7 +14,7 @@ class NightSummary {
     public awakenings: number | null = null, // 覚醒回数
     public awakeSession: Session[] = [], // 覚醒時間(h)
     public total: number | null = null, // 総睡眠時間(h)
-  ) { }
+  ) {}
 }
 
 export class Summary {
@@ -43,14 +43,14 @@ export class Summary {
     this.lastFeedingTime = this.computeLastFeedingTime(events)
     this.lastSleepingTime = this.computeLastSleepingTime(dayEvents, nightEvents)
     this.avgTemperature = this.computeAvgTemperature(climateData)
-    this.haveWalk = events.some(e => e.name === 'さんぽ')
+    this.haveWalk = events.some((e) => e.name === 'さんぽ')
     this.score = this.computeScore()
   }
 
   /*
     夜(22時〜6時)の睡睡を要約する
   */
-  public computeNightSleep(nightEvents: Event[]) {
+  private computeNightSleep(nightEvents: Event[]) {
     if (nightEvents.length == 0) {
       const sleepSession = [
         {
@@ -116,7 +116,7 @@ export class Summary {
       }
     })
 
-    const lastEvent = nightEvents.findLast(e => e.name === '起きる' || e.name === '寝る')
+    const lastEvent = nightEvents.findLast((e) => e.name === '起きる' || e.name === '寝る')
     if (lastEvent?.name === '起きる') {
       // 寝たのは endAt 以降
       awakeSession.push({
@@ -141,7 +141,7 @@ export class Summary {
   /**
    * 日中の睡眠時間を要約する
    */
-  public computeDaySleep(dayEvents: Event[]) {
+  private computeDaySleep(dayEvents: Event[]) {
     const dayTimeStart = subDays(this.nightTimeEnd, 1)
 
     if (dayEvents.length === 0) {
@@ -150,12 +150,13 @@ export class Summary {
 
     let sleepStart: Date | null = null
     let duration = 0
+
     dayEvents.forEach((e) => {
       if (e.name === '寝る') {
         sleepStart = e.datetime
       }
       if (e.name === '起きる') {
-        // 夜時間中に寝た
+        // 日中で寝た記録なし => 夜時間中に寝た
         if (sleepStart === null) {
           duration += this.duration(dayTimeStart, e.datetime)
         } else {
@@ -176,43 +177,47 @@ export class Summary {
    * 夜の睡眠前の最後の授乳の時間を返す
    * @returns 最後の授乳時間
    */
-  public computeLastFeedingTime(events: Event[]) {
-    // TODO length=0となる場合について
+  private computeLastFeedingTime(events: Event[]) {
     if (this.nightSummary === null || this.nightSummary.sleepSession.length === 0) return null
     const firstSleepStart = this.nightSummary.sleepSession[0].start
     const event = events.findLast(
       (e) => e.datetime < firstSleepStart && Summary.feedEvent.includes(e.name),
     )
     if (event === undefined) {
-      // TODO 前日のデータがない
+      // 前日のデータがない場合、computeLastFeedingTime は呼ばれない
       console.error('no feeding event')
       return null
     }
     return event.datetime
   }
 
-  public computeLastSleepingTime(dayEvents: Event[], nightEvents: Event[]) {
+  // TODO リファクタ
+  private computeLastSleepingTime(dayEvents: Event[], nightEvents: Event[]) {
     if (this.nightSummary === null || this.nightSummary.sleepSession.length === 0) return null
     // 夜時間開始時点で寝ていた場合
     if (this.nightSummary.sleepSession[0].start === this.nightTimeStart) {
       const e = nightEvents.find((e) => e.name === '寝る')
       // 夜時間開始ぴったりで寝た
-      if (e?.datetime === this.nightTimeStart) {
-        return e?.datetime
+      if (e && e.datetime === this.nightTimeStart) {
+        return e.datetime
       }
       // 夜時間前に寝ていた
       const lastSleepStart = dayEvents.findLast((e) => e.name === '寝る')
-      // TODO 前日データがない場合
-      return lastSleepStart?.datetime
+      if (!lastSleepStart) {
+        throw new Error('no sleep event')
+      }
+      return lastSleepStart.datetime
     }
     // 夜時間開始時点で寝ていなかった場合
     return this.nightSummary.sleepSession[0].start
   }
 
-  public computeAvgTemperature(data: ClimateData[]) {
-    const filtered = data
-      .filter(l => this.nightTimeStart <= l.datetime && l.datetime < this.nightTimeEnd)
+  private computeAvgTemperature(data: ClimateData[]) {
+    const filtered = data.filter(
+      (l) => this.nightTimeStart <= l.datetime && l.datetime <= this.nightTimeEnd,
+    ) //特例的にnightTimeEndを含める
     if (filtered.length === 0) return null
+    console.log(filtered.length)
     return filtered.reduce((prev, current) => prev + current.temperature, 0) / filtered.length
   }
 
@@ -222,7 +227,7 @@ export class Summary {
    * - 覚醒時間が短いほど高スコア
    * @returns スコア
    */
-  public computeScore() {
+  private computeScore() {
     if (this.nightSummary === null) return null
     const { sleepSession, awakeSession, awakenings } = this.nightSummary
     const sleepScore = sleepSession.reduce(
@@ -234,7 +239,7 @@ export class Summary {
     // スコアを100点満点にするために、スコアの最大値を計算して割る
     const maxDuration = this.duration(this.nightTimeStart, this.nightTimeEnd)
     const maxScore = maxDuration * maxDuration * 10
-    return this.normalize(sleepScore * 10 - awakenings * 5 - awakePenalty * 20, maxScore)
+    return this.normalize(sleepScore * 10 - awakenings! * 5 - awakePenalty * 20, maxScore)
   }
 
   private duration(start: Date, end: Date) {
@@ -256,9 +261,7 @@ export class Summary {
    * @returns events
    */
   private getNightEvents(events: Event[]) {
-    return events.filter(
-      (e) => this.nightTimeStart <= e.datetime && e.datetime < this.nightTimeEnd,
-    )
+    return events.filter((e) => this.nightTimeStart <= e.datetime && e.datetime < this.nightTimeEnd)
   }
 
   /**
