@@ -37,12 +37,24 @@ const importClimateLog = async () => {
     <div class="text-headline-medium my-2">育児記録</div>
     ぴよログのメニュー > 記録の出力 > データのエクスポート で出力したデータを貼り付けてください。
     <v-textarea class="mt-2" v-model="childcareLog" />
-    <v-btn size="large" :disabled="childcareLog.length === 0" variant="outlined" @click="importChildcareLog">Import</v-btn>
+    <v-btn
+      size="large"
+      :disabled="childcareLog.length === 0"
+      variant="outlined"
+      @click="importChildcareLog"
+      >Import</v-btn
+    >
   </div>
   <div class="my-6">
     <div class="text-headline-medium py-2">気温・湿度</div>
     switch bot の温湿度計 > データエクスポート で出力したデータを貼り付けてください。
     <v-textarea class="mt-2" v-model="climateLog" />
-    <v-btn size="large" :disabled="climateLog.length === 0" variant="outlined" @click="importClimateLog">Import</v-btn>
+    <v-btn
+      size="large"
+      :disabled="climateLog.length === 0"
+      variant="outlined"
+      @click="importClimateLog"
+      >Import</v-btn
+    >
   </div>
 </template>

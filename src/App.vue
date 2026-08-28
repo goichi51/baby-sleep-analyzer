@@ -30,6 +30,4 @@ const selectedTab = ref('list')
     </suspense>
   </main>
 </template>
-<style scoped>
-
-</style>
+<style scoped></style>

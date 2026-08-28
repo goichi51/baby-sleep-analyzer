@@ -21,12 +21,15 @@ const range = computed(() => {
   return { since, until }
 })
 
-const summariesUrl = computed(() => `/api/summaries?since=${range.value.since}&until=${range.value.until}`)
-const { data: summaries, statusCode: summariesStatusCode } = await useFetch<Summary[]>(summariesUrl, {
-  refetch: true,
-}).json()
-
-
+const summariesUrl = computed(
+  () => `/api/summaries?since=${range.value.since}&until=${range.value.until}`,
+)
+const { data: summaries, statusCode: summariesStatusCode } = await useFetch<Summary[]>(
+  summariesUrl,
+  {
+    refetch: true,
+  },
+).json()
 
 const summaryUrl = computed(() => `/api/summaries?date=${selectedDayStr.value}`)
 const { data: summary, statusCode: summaryStatusCode } = await useFetch<Summary>(summaryUrl, {
@@ -38,22 +41,32 @@ if (summaryStatusCode.value == null || summaryStatusCode.value >= 500) {
 }
 
 const childcareLogUrl = computed(() => `/api/logs/childcare?date=${selectedDayStr.value}`)
-const { data: childcareLog = null, statusCode: childcareLogStatusCode } = await useFetch<ChildcareLog>(childcareLogUrl, {
-  refetch: true,
-}).json()
+const { data: childcareLog = null, statusCode: childcareLogStatusCode } =
+  await useFetch<ChildcareLog>(childcareLogUrl, {
+    refetch: true,
+  }).json()
 if (childcareLogStatusCode.value == null || childcareLogStatusCode.value >= 500) {
   throw new Error()
 }
 
 const climateLogUrl = computed(() => `/api/logs/climate?date=${selectedDayStr.value}`)
-const { data: climateLog = null, statusCode: climateLogStatusCode } = await useFetch<ClimateLog>(climateLogUrl, {
-  refetch: true,
-}).json()
+const { data: climateLog = null, statusCode: climateLogStatusCode } = await useFetch<ClimateLog>(
+  climateLogUrl,
+  {
+    refetch: true,
+  },
+).json()
 if (climateLogStatusCode.value == null || climateLogStatusCode.value >= 500) {
   throw new Error()
 }
 </script>
 
 <template>
-  <ListTab :summary :summaries :childcareLog="childcareLog" :climateLog="climateLog" :selected="selectedDayStr" />
+  <ListTab
+    :summary
+    :summaries
+    :childcareLog="childcareLog"
+    :climateLog="climateLog"
+    :selected="selectedDayStr"
+  />
 </template>

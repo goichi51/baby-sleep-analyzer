@@ -13,11 +13,11 @@ import {
   TimeScale,
   type ChartData,
   type ChartOptions,
-  type Plugin
+  type Plugin,
 } from 'chart.js'
-import type { ClimateLog } from '@/type/log';
-import { addDays, addHours, startOfDay, startOfToday } from 'date-fns';
-import type { Summary } from '@/type/summary';
+import type { ClimateLog } from '@/type/log'
+import { addDays, addHours, startOfDay, startOfToday } from 'date-fns'
+import type { Summary } from '@/type/summary'
 import 'chartjs-adapter-date-fns'
 
 ChartJS.register(
@@ -28,12 +28,12 @@ ChartJS.register(
   PointElement,
   LineElement,
   CategoryScale,
-  LinearScale
+  LinearScale,
 )
 
 const props = defineProps<{
-    summary: Summary
-    log: ClimateLog
+  summary: Summary
+  log: ClimateLog
 }>()
 
 interface Highlight {
@@ -43,10 +43,10 @@ interface Highlight {
 }
 
 const eventHighlights = computed<Highlight[]>(() => {
-  return (props.summary.nightSummary?.awakeSession ?? []).map(s => ({
+  return (props.summary.nightSummary?.awakeSession ?? []).map((s) => ({
     start: new Date(s.start).getTime(),
     end: new Date(s.end).getTime(),
-    color: 'rgba(255, 99, 132, 0.2)'
+    color: 'rgba(255, 99, 132, 0.2)',
   }))
 })
 
@@ -58,45 +58,40 @@ const eventHighlightPlugin: Plugin<'line'> = {
 
     ctx.save()
 
-    eventHighlights.value.forEach(eventHighlight => {
+    eventHighlights.value.forEach((eventHighlight) => {
       const startX = scales.x!.getPixelForValue(eventHighlight!.start)
       const endX = scales.x!.getPixelForValue(eventHighlight!.end)
       ctx.fillStyle = eventHighlight!.color
-        ctx.fillRect(
-          startX,
-          chartArea.top,
-          endX - startX,
-          chartArea.bottom - chartArea.top
-        )
-    });
-    
+      ctx.fillRect(startX, chartArea.top, endX - startX, chartArea.bottom - chartArea.top)
+    })
+
     ctx.restore()
-  }
+  },
 }
 
 const temperatureData = computed<ChartData<'line'>>(() => {
-  const data = props.log.data.map(log => ({x: log.datetime, y: log.temperature }))
+  const data = props.log.data.map((log) => ({ x: log.datetime, y: log.temperature }))
   return {
     datasets: [
       {
         label: '気温',
         borderColor: '#1867C0',
-        data
-      }
-    ]
+        data,
+      },
+    ],
   } as any
 })
 
 const humidityData = computed<ChartData<'line'>>(() => {
-  const data = props.log.data.map(log => ({x: log.datetime, y: log.humidity}))
+  const data = props.log.data.map((log) => ({ x: log.datetime, y: log.humidity }))
   return {
     datasets: [
       {
         label: '湿度',
         borderColor: '#C06718',
-        data
-      }
-    ]
+        data,
+      },
+    ],
   } as any
 })
 
@@ -107,17 +102,17 @@ const chartOptions = ref<ChartOptions<'line'>>({
     x: {
       type: 'time',
       time: {
-        unit: 'hour', 
+        unit: 'hour',
         displayFormats: {
-          hour: 'HH' 
-        }
+          hour: 'HH',
+        },
       },
       title: {
         display: true,
-        text: '時刻'
-      }
+        text: '時刻',
+      },
     },
-  }
+  },
 })
 </script>
 <template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ChildcareLog } from '@/type/log'
-import { toDisplayTime } from '@/utils/date';
+import { toDisplayTime } from '@/utils/date'
 import { format } from 'date-fns'
 import { computed } from 'vue'
 
@@ -19,7 +19,13 @@ const events = computed(() =>
 <template>
   <v-card variant="tonal" title="一日の記録">
     <v-card-text>
-      <v-data-table class="border-b-sm" density="compact" items-per-page=100 hide-default-footer :items="events" />
+      <v-data-table
+        class="border-b-sm"
+        density="compact"
+        items-per-page="100"
+        hide-default-footer
+        :items="events"
+      />
       <div class="mt-4" v-if="log.diary">
         <div class="mb-2 text-title-medium font-weight-bold">日記</div>
         {{ log.diary.text }}

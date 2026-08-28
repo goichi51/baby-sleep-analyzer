@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { ClimateLog } from '@/type/log';
+import type { ClimateLog } from '@/type/log'
 import type { Session, Summary } from '@/type/summary'
 import { computed, ref } from 'vue'
-import ClimateGraph from './ClimateGraph.vue';
-import { toDisplayDate, toDisplayTime } from '@/utils/date.ts';
+import ClimateGraph from './ClimateGraph.vue'
+import { toDisplayDate, toDisplayTime } from '@/utils/date.ts'
 
 const props = defineProps<{
   summary: Summary
@@ -29,7 +29,12 @@ const item = computed(() => {
     sleepSession: nightSummary.sleepSession?.map((s) => convertSession(s)),
     awakeSession: nightSummary.awakeSession?.map((s) => convertSession(s)),
   }
-  const { daySleepDuration, lastFeedingTime, lastSleepingTime, avgTemperature: avgTemperature } = props.summary
+  const {
+    daySleepDuration,
+    lastFeedingTime,
+    lastSleepingTime,
+    avgTemperature: avgTemperature,
+  } = props.summary
   return {
     ...props.summary,
     daySleepDuration: daySleepDuration ? floor(daySleepDuration) : null,
@@ -63,20 +68,23 @@ const tab = ref(tabs[0]?.value)
         <div>夜間覚醒回数： {{ item.nightSummary.awakenings ?? '-' }}</div>
       </div>
 
-        <v-tabs v-model="tab" inset grow class="mb-1">
-          <v-tab v-for="t in tabs" :value="t.value">{{ t.label }}</v-tab>
-        </v-tabs>
+      <v-tabs v-model="tab" inset grow class="mb-1">
+        <v-tab v-for="t in tabs" :value="t.value">{{ t.label }}</v-tab>
+      </v-tabs>
 
-        <v-tabs-window v-model="tab">
-          <v-tabs-window-item :value="tabs[0]?.value">
-            <v-data-table density="compact" hide-default-footer :items="item.nightSummary.sleepSession" />
-          </v-tabs-window-item>
-          <v-tabs-window-item :value="tabs[1]?.value">
-            <div v-if="log"><ClimateGraph :log="log" :summary /></div>
-            <div v-else>データがありません</div>
-          </v-tabs-window-item>
-        </v-tabs-window>
-
+      <v-tabs-window v-model="tab">
+        <v-tabs-window-item :value="tabs[0]?.value">
+          <v-data-table
+            density="compact"
+            hide-default-footer
+            :items="item.nightSummary.sleepSession"
+          />
+        </v-tabs-window-item>
+        <v-tabs-window-item :value="tabs[1]?.value">
+          <div v-if="log"><ClimateGraph :log="log" :summary /></div>
+          <div v-else>データがありません</div>
+        </v-tabs-window-item>
+      </v-tabs-window>
     </v-card-text>
   </v-card>
 </template>
