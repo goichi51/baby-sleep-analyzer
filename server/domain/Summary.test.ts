@@ -6,6 +6,24 @@ import { Summary } from './Summary.ts'
 const startAt = new Date('2026-07-25T22:00:00Z')
 const endAt = new Date('2026-07-26T06:00:00Z')
 
+describe('computeDaySleep', () => {
+  test.only('日中の睡眠時間の総和が計算される', () => {
+    const events: Event[] = [
+      { name: '起きる', datetime: new Date('2026-07-26T06:30:00Z') },
+      { name: '寝る', datetime: new Date('2026-07-26T09:00:00Z') },
+      { name: '起きる', datetime: new Date('2026-07-26T11:00:00Z') },
+      { name: '母乳', datetime: new Date('2026-07-26T11:30:00Z') },
+      { name: '寝る', datetime: new Date('2026-07-26T014:30:00Z') },
+      { name: '起きる', datetime: new Date('2026-07-26T16:00:00Z') },
+      { name: '寝る', datetime: new Date('2026-07-26T20:00:00Z') },
+      { name: '起きる', datetime: new Date('2026-07-26T23:00:00Z') },
+      { name: '寝る', datetime: new Date('2026-07-26T23:30:00Z') },
+    ]
+    const summary = new Summary(events, [], startAt, endAt, true)
+    expect(summary.daySleepDuration).toEqual(6)
+  })
+})
+
 describe('computeNightSleep', () => {
   test('startAt 以前に入眠、endAt 以降に覚醒（途中覚醒あり)', () => {
     const events: Event[] = [
