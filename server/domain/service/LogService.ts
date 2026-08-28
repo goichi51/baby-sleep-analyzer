@@ -3,7 +3,7 @@ import { DiaryRepository } from '../../repository/DiaryRepository.ts'
 import { StateRepository } from '../../repository/StateRepository.ts'
 import { StateCollection } from '../dto/StateCollection.ts'
 import { EventRepository } from '../../repository/EventRepository.ts'
-import { CustomDate } from '../../CustomDate.ts'
+import { CustomDate } from '../CustomDate.ts'
 import { addHours, format, startOfDay } from 'date-fns'
 import { ChildcareLogCollection } from '../ChildcareLogCollection.ts'
 import { ChildcareLog } from '../dto/ChildcareLog.ts'
@@ -18,7 +18,7 @@ export class LogService {
     private stateRepo: StateRepository,
     private climateDataRepo: ClimateDataRepository,
     private db: MySql2Database,
-  ) { }
+  ) {}
 
   public async createChildcareLog(text: string) {
     const parsed = ChildcareLogCollection.create(text)
@@ -32,10 +32,13 @@ export class LogService {
         .then(() => this.diaryRepo.insert(parsed.diary, tx))
       const statePromise = this.stateRepo
         .delete(since, until, 'childcare', tx)
-        .then(() => this.stateRepo.insert(new StateCollection(since, until, 'childcare').states, tx)
+        .then(() =>
+          this.stateRepo.insert(new StateCollection(since, until, 'childcare').states, tx),
         )
       await Promise.all([eventPromise, diaryPromise, statePromise])
-      console.info(`Import childcare logs for the period from ${format(since, 'yyyy-MM-dd hh:mm')} to ${format(until, 'yyyy-MM-dd hh:mm')}`)
+      console.info(
+        `Import childcare logs for the period from ${format(since, 'yyyy-MM-dd hh:mm')} to ${format(until, 'yyyy-MM-dd hh:mm')}`,
+      )
     })
   }
 
@@ -48,12 +51,11 @@ export class LogService {
         .then(() => this.climateDataRepo.insert(parsed.data, tx))
       const statePromise = this.stateRepo
         .delete(since, until, 'climate', tx)
-        .then(() => this.stateRepo.insert(
-          new StateCollection(since, until, 'climate').states,
-          tx
-        ))
+        .then(() => this.stateRepo.insert(new StateCollection(since, until, 'climate').states, tx))
       await Promise.all([logPromise, statePromise])
-      console.info(`Import climate logs for the period from ${format(since, 'yyyy-MM-dd hh:mm')} to ${format(until, 'yyyy-MM-dd hh:mm')}`)
+      console.info(
+        `Import climate logs for the period from ${format(since, 'yyyy-MM-dd hh:mm')} to ${format(until, 'yyyy-MM-dd hh:mm')}`,
+      )
     })
   }
 

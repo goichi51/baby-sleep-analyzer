@@ -1,5 +1,5 @@
 import { format, startOfDay } from 'date-fns'
-import { CustomDate } from '../../CustomDate.ts'
+import { CustomDate } from '../CustomDate.ts'
 import { EventRepository } from '../../repository/EventRepository.ts'
 import { Summary } from '../Summary.ts'
 import { StateRepository } from '../../repository/StateRepository.ts'
@@ -10,7 +10,7 @@ export class SummaryService {
     private eventRepo: EventRepository,
     private climateLogRepo: ClimateDataRepository,
     private stateRepo: StateRepository,
-  ) { }
+  ) {}
 
   /**
    * 指定された期間の睡眠情報の要約を返す.
@@ -35,7 +35,8 @@ export class SummaryService {
       format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
     )
     const dateClimateDataMap = Map.groupBy(climateData, ({ datetime }) =>
-      format(CustomDate.getDate(datetime), 'yyyy-MM-dd'))
+      format(CustomDate.getDate(datetime), 'yyyy-MM-dd'),
+    )
     const dateStatesMap = Map.groupBy(states, ({ date }) => format(date, 'yyyy-MM-dd'))
     return Array.from(
       dateEventsMap.entries().map(([date, events]) => {

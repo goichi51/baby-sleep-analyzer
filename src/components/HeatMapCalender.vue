@@ -85,19 +85,19 @@ const doesHaveWalk = (date: string) => {
               <template v-slot:day="{ date }">
                 <div class="day-background-layer" :style="{ backgroundColor: getBgColor(date) }" />
                 <div class="d-flex flex-sm-wrap">
-                  <div class="mx-1">
+                  <div class="mx-1 day-info">
                     <v-icon icon="mdi-food-fork-drink" size="small" />
                     {{ toDisplayTime(dateSummaryMap.get(date)?.lastFeedingTime) }}
                   </div>
-                  <div class="mx-1">
+                  <div class="mx-1 day-info">
                     <v-icon icon="mdi-sleep" size="small" />
                     {{ toDisplayTime(dateSummaryMap.get(date)?.lastSleepingTime) }}
                   </div>
-                  <div class="mx-1">
+                  <div class="mx-1 day-info">
                     <v-icon icon="mdi-shoe-print" size="small" />
                     {{ doesHaveWalk(date) }}
                   </div>
-                  <div class="mx-1">
+                  <div class="mx-1 day-info">
                     <v-icon icon="mdi-thermometer" size="small" />
                     {{
                       dateSummaryMap.get(date)?.avgTemperature
@@ -132,5 +132,8 @@ const doesHaveWalk = (date: string) => {
     min-height: 115px !important;
     padding: 5px;
   }
+}
+.day-info {
+  width: 60px;
 }
 </style>

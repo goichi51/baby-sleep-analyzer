@@ -1,4 +1,4 @@
-import { differenceInMinutes, subDays } from 'date-fns'
+import { differenceInMinutes, startOfDay, subDays } from 'date-fns'
 import { Event } from './dto/ChildcareLog.ts'
 import { ClimateData } from './dto/ClimateLog.ts'
 
@@ -185,7 +185,7 @@ export class Summary {
     )
     if (event === undefined) {
       // 前日のデータがない場合、computeLastFeedingTime は呼ばれない
-      console.error('no feeding event')
+      console.error(`No feeding event in daytime. date=${startOfDay(this.nightTimeStart)}`)
       return null
     }
     return event.datetime
@@ -204,7 +204,8 @@ export class Summary {
       // 夜時間前に寝ていた
       const lastSleepStart = dayEvents.findLast((e) => e.name === '寝る')
       if (!lastSleepStart) {
-        throw new Error('no sleep event')
+        console.error(`No sleep event in daytime. date=${startOfDay(this.nightTimeStart)}`)
+        return null
       }
       return lastSleepStart.datetime
     }
@@ -217,7 +218,6 @@ export class Summary {
       (l) => this.nightTimeStart <= l.datetime && l.datetime <= this.nightTimeEnd,
     ) //特例的にnightTimeEndを含める
     if (filtered.length === 0) return null
-    console.log(filtered.length)
     return filtered.reduce((prev, current) => prev + current.temperature, 0) / filtered.length
   }
 

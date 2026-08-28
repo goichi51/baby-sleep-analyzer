@@ -1,5 +1,5 @@
-import { addDays, addHours, format, startOfDay, startOfHour } from "date-fns";
-import { ClimateData } from "./dto/ClimateLog.ts";
+import { addDays, addHours, format, startOfDay, startOfHour } from 'date-fns'
+import { ClimateData } from './dto/ClimateLog.ts'
 
 /**
  * CSVデータをパースしてClimateDataを作成する
@@ -9,41 +9,47 @@ import { ClimateData } from "./dto/ClimateLog.ts";
  * 2026-07-21 17:03,29.4,49,17.5,2.08,14.34
  */
 export class ClimateLogCollection {
-  constructor(public data: ClimateData[]) { }
+  constructor(public data: ClimateData[]) {}
 
+  /**
+   * csvのデータを読み　ClimateLogCollection に変換する
+   *
+   * @param csvText
+   * @returns 変換されたcsvのデータ
+   */
   public static create(csvText: string): ClimateLogCollection {
-    const lines = csvText.trim().split(/\r?\n/);
-    if (lines.length <= 1) return new ClimateLogCollection([]);
+    const lines = csvText.trim().split(/\r?\n/)
+    if (lines.length <= 1) return new ClimateLogCollection([])
 
     // ヘッダー行を除外
-    const dataLines = lines.slice(1);
+    const dataLines = lines.slice(1)
 
-    const climateData: ClimateData[] = [];
-    const seenHours = new Set<string>();
+    const climateData: ClimateData[] = []
+    const seenHours = new Set<string>()
 
     for (const line of dataLines) {
-      if (!line.trim()) continue;
+      if (!line.trim()) continue
 
-      const columns = line.split(',');
+      const columns = line.split(',')
 
       // カラムの抽出
-      const dateStr = columns[0].trim();
-      const temperature = parseFloat(columns[1]);
-      const humidity = parseFloat(columns[2]);
+      const dateStr = columns[0].trim()
+      const temperature = parseFloat(columns[1])
+      const humidity = parseFloat(columns[2])
 
       // 日時オブジェクトの生成 ("YYYY-MM-DD HH:mm" -> ISO形式に変換してパース)
-      const date = new Date(dateStr.replace(' ', 'T'));
+      const date = new Date(dateStr.replace(' ', 'T'))
 
       // date-fns の format 関数で 1時間単位の識別キーを作成 (例: "2026-07-21-17")
-      const hourKey = format(date, 'yyyy-MM-dd-HH');
+      const hourKey = format(date, 'yyyy-MM-dd-HH')
 
       // その時間帯（1h）でまだ登録されていない場合のみ配列に追加
       if (!seenHours.has(hourKey)) {
-        seenHours.add(hourKey);
-        climateData.push(new ClimateData(startOfHour(date), temperature, humidity));
+        seenHours.add(hourKey)
+        climateData.push(new ClimateData(startOfHour(date), temperature, humidity))
       }
     }
-    return new ClimateLogCollection(climateData);
+    return new ClimateLogCollection(climateData)
   }
 
   public getPeriod() {
@@ -62,5 +68,4 @@ export class ClimateLogCollection {
     }
     return { since, until: addHours(until, 1) }
   }
-
 }
