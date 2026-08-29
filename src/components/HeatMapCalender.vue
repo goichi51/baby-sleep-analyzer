@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { format } from 'date-fns'
 import router from '@/router'
 import type { Summary } from '@/type/summary'
 import { toDisplayTime } from '@/utils/date'
+import { labels } from '@/utils/labels'
+import { tryOnBeforeUnmount } from '@vueuse/core'
 
 const props = defineProps<{
   summaries: Summary[]
@@ -52,15 +54,47 @@ const doesHaveWalk = (date: string) => {
   if (!dateSummaryMap.value.get(date)?.haveWalk === null) return '-'
   return dateSummaryMap.value.get(date)?.haveWalk ? '○' : '×'
 }
+
+const toDisplayFloat = (val: number | null | undefined) => {
+  if (!val) return '-'
+  return Math.floor(val * 10) / 10
+}
+
+const calenderItemNames = ['daySleepDuration', 'lastFeedingTime', 'haveWalk', 'lastSleepingTime', 'avgTemperature'] as const
+type CalenderItemName = typeof calenderItemNames[number]
+
+const getCalenderItem = (date: string, name: CalenderItemName) => {
+  const summary = dateSummaryMap.value.get(date)
+  switch(name) {
+    case 'lastSleepingTime':
+    case 'lastFeedingTime':
+      return toDisplayTime(summary ? summary[name] : undefined)
+    case 'haveWalk':
+      return doesHaveWalk(date)
+    case 'daySleepDuration':
+    case 'avgTemperature':
+      return toDisplayFloat(summary ? summary[name] : undefined)
+  }
+}
+
+const displayed: Ref<Record<CalenderItemName, boolean>> = ref({
+  lastSleepingTime: true,
+  lastFeedingTime: true,
+  haveWalk: true,
+  daySleepDuration: true,
+  avgTemperature: true
+})
 </script>
 <template>
-  <v-card>
-    <v-card-text>
-      <div class="d-flex flex-sm-wrap ga-4 mb-2">
-        <span><v-icon icon="mdi-food-fork-drink" size="small" />：日中最後のごはんの時間</span>
-        <span><v-icon icon="mdi-sleep" size="small" />：夜間睡眠に入った時間</span>
-        <span><v-icon icon="mdi-shoe-print" size="small" />：さんぽの有無</span>
-        <span><v-icon icon="mdi-thermometer" size="small" />：夜間帯の平均気温</span>
+  <v-card variant="flat">
+    <div class="d-flex flex-sm-wrap ga-4">
+        <span v-for="name in calenderItemNames">
+          <v-checkbox v-model="displayed[name]" density="compact">
+            <template v-slot:label>
+              <v-icon :icon="labels[name]!.icon" :color="labels[name]!.color" size="small" class="mr-1"/>{{ labels[name]!.name }}
+            </template>
+          </v-checkbox>
+        </span>
       </div>
       <v-row class="fill-height">
         <v-col class="w-100">
@@ -85,25 +119,11 @@ const doesHaveWalk = (date: string) => {
               <template v-slot:day="{ date }">
                 <div class="day-background-layer" :style="{ backgroundColor: getBgColor(date) }" />
                 <div class="d-flex flex-sm-wrap">
-                  <div class="mx-1 day-info">
-                    <v-icon icon="mdi-food-fork-drink" size="small" />
-                    {{ toDisplayTime(dateSummaryMap.get(date)?.lastFeedingTime) }}
-                  </div>
-                  <div class="mx-1 day-info">
-                    <v-icon icon="mdi-sleep" size="small" />
-                    {{ toDisplayTime(dateSummaryMap.get(date)?.lastSleepingTime) }}
-                  </div>
-                  <div class="mx-1 day-info">
-                    <v-icon icon="mdi-shoe-print" size="small" />
-                    {{ doesHaveWalk(date) }}
-                  </div>
-                  <div class="mx-1 day-info">
-                    <v-icon icon="mdi-thermometer" size="small" />
-                    {{
-                      dateSummaryMap.get(date)?.avgTemperature
-                        ? Math.floor(dateSummaryMap.get(date)!.avgTemperature! * 10) / 10
-                        : '-'
-                    }}
+                  <div v-for="name in calenderItemNames" >
+                    <div class="mx-1 day-info" v-if="displayed[name]">
+                    <v-icon :icon="labels[name]!.icon" size="small" />
+                    {{ getCalenderItem(date, name) }}
+                    </div>
                   </div>
                 </div>
               </template>
@@ -111,7 +131,6 @@ const doesHaveWalk = (date: string) => {
           </v-sheet>
         </v-col>
       </v-row>
-    </v-card-text>
   </v-card>
 </template>
 <style scoped>
@@ -135,5 +154,6 @@ const doesHaveWalk = (date: string) => {
 }
 .day-info {
   width: 60px;
+  opacity: 0.6; 
 }
 </style>

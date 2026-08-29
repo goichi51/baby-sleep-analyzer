@@ -46,11 +46,17 @@ const item = computed(() => {
     avgTemperature: avgTemperature ? floor(avgTemperature) : null,
     nightSummaryTotal: summary.total,
     nightSummaryAwakenings: summary.awakenings,
-    haveWalk: props.summary.haveWalk ? 'あり' : 'なし'
+    haveWalk: props.summary.haveWalk ? 'あり' : 'なし',
   }
 })
 
-const displayUnits = ['daySleepDuration', 'lastFeedingTime', 'haveWalk', 'lastSleepingTime', 'avgTemperature'] as (keyof Summary)[]
+const displayUnits = [
+  'daySleepDuration',
+  'lastFeedingTime',
+  'haveWalk',
+  'lastSleepingTime',
+  'avgTemperature',
+] as (keyof Summary)[]
 
 const tabs = [
   { value: 'detail', label: '詳細' },
@@ -66,42 +72,49 @@ const getOrDefault = (val: unknown, defaultVal: string = '-') => {
 <template>
   <v-container fluid class="bg-grey-darken-4 pa-3">
     <div class="d-flex align-center mb-6 ga-4">
-        <span class="text-headline-medium font-weight-bold tracking-wide">{{ toDisplayDate(item.nightTimeStart) }}</span>
-      <v-chip
-        color="amber-darken-2"
-        variant="flat"
-        size="large"
-        class="font-weight-bold px-4"
-      >
+      <span class="text-headline-medium font-weight-bold tracking-wide">{{
+        toDisplayDate(item.nightTimeStart)
+      }}</span>
+      <v-chip color="amber-darken-2" variant="flat" size="large" class="font-weight-bold px-4">
         <v-icon start icon="mdi-star-circle-outline"></v-icon>
-        {{item.score}}点
+        {{ item.score }}点
       </v-chip>
     </div>
-      <div class="d-flex ga-2 mt-3 mb-6">
-      <SummaryUnitCard v-for="unit in displayUnits" :title="labels[unit]!.name" :icon="labels[unit]!.icon" :color="labels[unit]!.color">
+    <div class="d-flex ga-2 mt-3 mb-6">
+      <SummaryUnitCard
+        v-for="unit in displayUnits"
+        :title="labels[unit]!.name"
+        :icon="labels[unit]!.icon"
+        :color="labels[unit]!.color"
+      >
         <div class="stat-value font-weight-bold">
-            {{ getOrDefault(item[unit]) }}
-            <span v-if="labels[unit]?.unit" class="stat-unit ms-1">{{labels[unit]!.unit}}</span>
-          </div>
+          {{ getOrDefault(item[unit]) }}
+          <span v-if="labels[unit]?.unit" class="stat-unit ms-1">{{ labels[unit]!.unit }}</span>
+        </div>
       </SummaryUnitCard>
-      <SummaryUnitCard :title="`${labels.nightSummaryTotal!.name}/${labels.nightSummaryAwakenings!.name}`" :icon="labels.nightSummaryTotal!.icon" :color="labels.nightSummaryTotal!.color">
-         <div class="stat-value font-weight-bold">
-            {{ getOrDefault(item.nightSummaryTotal) }}
-            <span class="stat-unit ms-1">{{ labels.nightSummaryTotal!.unit }}</span> <span class="text-h5 text-grey">/</span> 
-            {{ getOrDefault(item.nightSummaryAwakenings) }}
-            <span class="stat-unit ms-1">{{ labels.nightSummaryAwakenings!.unit }}</span>
-          </div>
+      <SummaryUnitCard
+        :title="`${labels.nightSummaryTotal!.name}/${labels.nightSummaryAwakenings!.name}`"
+        :icon="labels.nightSummaryTotal!.icon"
+        :color="labels.nightSummaryTotal!.color"
+      >
+        <div class="stat-value font-weight-bold">
+          {{ getOrDefault(item.nightSummaryTotal) }}
+          <span class="stat-unit ms-1">{{ labels.nightSummaryTotal!.unit }}</span>
+          <span class="text-h5 text-grey">/</span>
+          {{ getOrDefault(item.nightSummaryAwakenings) }}
+          <span class="stat-unit ms-1">{{ labels.nightSummaryAwakenings!.unit }}</span>
+        </div>
       </SummaryUnitCard>
-</div>
-<v-card variant="tonal" rounded="lg">
-      <v-tabs v-model="tab" grow inset >
+    </div>
+    <v-card variant="tonal" rounded="lg">
+      <v-tabs v-model="tab" grow inset>
         <v-tab v-for="t in tabs" :value="t.value">{{ t.label }}</v-tab>
       </v-tabs>
 
       <v-tabs-window v-model="tab">
         <v-tabs-window-item :value="tabs[0]?.value">
           <v-data-table
-          class="pa-3"
+            class="pa-3"
             density="compact"
             hide-default-footer
             :items="item.nightSummary!.sleepSession"
@@ -112,8 +125,8 @@ const getOrDefault = (val: unknown, defaultVal: string = '-') => {
           <div v-else>データがありません</div>
         </v-tabs-window-item>
       </v-tabs-window>
-</v-card>
-   </v-container>
+    </v-card>
+  </v-container>
 </template>
 <style scoped>
 .stat-value {
@@ -128,5 +141,4 @@ const getOrDefault = (val: unknown, defaultVal: string = '-') => {
   margin-left: 2px;
   color: #b0bec5;
 }
-
 </style>
