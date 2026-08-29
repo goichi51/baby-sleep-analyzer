@@ -56,7 +56,7 @@ const doesHaveWalk = (date: string) => {
 <template>
   <v-card>
     <v-card-text>
-      <div class="d-flex flex-sm-wrap ga-4">
+      <div class="d-flex flex-sm-wrap ga-4 mb-2">
         <span><v-icon icon="mdi-food-fork-drink" size="small" />：日中最後のごはんの時間</span>
         <span><v-icon icon="mdi-sleep" size="small" />：夜間睡眠に入った時間</span>
         <span><v-icon icon="mdi-shoe-print" size="small" />：さんぽの有無</span>

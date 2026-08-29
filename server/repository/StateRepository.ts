@@ -14,7 +14,7 @@ export class StateRepository {
     await (tx ?? this.db).insert(states).values(entities)
   }
 
-public async delete(
+  public async delete(
     since: Date,
     until: Date,
     type: State['type'],
@@ -28,13 +28,14 @@ public async delete(
   public async findByDateRange(
     since: Date,
     until: Date,
+    type: 'childcare' | 'climate',
     tx?: MySqlAsyncTransaction<MySql2QueryResultHKT>,
   ) {
     return (
       await (tx ?? this.db)
         .select()
         .from(states)
-        .where(and(gte(states.datetime, since), lt(states.datetime, until)))
+        .where(and(gte(states.datetime, since), lt(states.datetime, until), eq(states.type, type)))
         .orderBy(asc(states.datetime))
     ).map((r) => ({
       type: r.type,

@@ -29,6 +29,7 @@ export class SummaryService {
     const states = await this.stateRepo.findByDateRange(
       startOfDay(customDateSince),
       customDateUntil,
+      'childcare',
     )
     // 朝6時を基準とした日付でグルーピング
     const dateEventsMap = Map.groupBy(events, ({ datetime }) =>

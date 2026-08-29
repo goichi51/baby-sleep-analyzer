@@ -14,7 +14,7 @@ defineProps<{
 }>()
 </script>
 <template>
-  <div class="d-flex ga-5 flex-column">
+  <div class="d-flex ga-3 flex-column">
     <HeatMapCalender :selected :summaries />
     <SummaryCard v-if="summary" :summary :log="climateLog" />
     <EventCard v-if="childcareLog" :log="childcareLog" />

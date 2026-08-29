@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ChildcareLog } from '@/type/log'
 import { toDisplayTime } from '@/utils/date'
-import { format } from 'date-fns'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -17,7 +16,8 @@ const events = computed(() =>
 )
 </script>
 <template>
-  <v-card variant="tonal" title="一日の記録">
+  <v-card variant="tonal" rounded="lg" class="ma-3">
+    <div class="text-headline-small font-weight-bold tracking-wide ma-3">できごと</div>
     <v-card-text>
       <v-data-table
         class="border-b-sm"
