@@ -89,7 +89,7 @@ const displayed: Ref<Record<CalenderItemName, boolean>> = ref({
   <v-card variant="flat">
     <div class="d-flex flex-sm-wrap ga-4">
         <span v-for="name in calenderItemNames">
-          <v-checkbox v-model="displayed[name]" density="compact">
+          <v-checkbox v-model="displayed[name]" density="compact" color="primary">
             <template v-slot:label>
               <v-icon :icon="labels[name]!.icon" :color="labels[name]!.color" size="small" class="mr-1"/>{{ labels[name]!.name }}
             </template>
