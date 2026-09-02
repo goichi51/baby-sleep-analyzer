@@ -36,7 +36,7 @@ services:
     container_name: mysql_db
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci # クライアント接続互換性のため
     ports:
-      - "3306:3306" # ホストPCのGUIツール（DBeaverやTablePlusなど）から接続する場合に開放
+      - "3306:3306" 
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-}
       MYSQL_DATABASE: sleep_analyzer        
@@ -44,8 +44,7 @@ services:
       MYSQL_PASSWORD: app_password
       TZ: "Asia/Tokyo"
     volumes:
-      - db-data:/var/lib/mysql # データを永続化（コンテナ削除時もデータを保持）
-      # - ./docker/mysql/init:/docker-entrypoint-initdb.d # 初回起動時に実行したい.sqlファイルを配置する場合
+      - db-data:/var/lib/mysql 
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
       interval: 5s

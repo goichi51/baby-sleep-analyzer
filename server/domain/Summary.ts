@@ -156,20 +156,16 @@ export class Summary {
         sleepStart = e.datetime
       }
       if (e.name === '起きる') {
-        // 日中で寝た記録なし => 夜時間中に寝た
         if (sleepStart === null) {
-          duration += this.duration(dayTimeStart, e.datetime)
+          // 日中で寝た記録なし => 夜時間中に寝た
+          // 夜の睡眠から連続しているものはカウントしない
+          // duration += this.duration(dayTimeStart, e.datetime)
         } else {
           duration += this.duration(sleepStart, e.datetime)
         }
         sleepStart = null
       }
     })
-    const lastEvent = dayEvents[dayEvents.length - 1]
-    if (lastEvent.name === '寝る') {
-      // 起きたのは夜時間
-      duration += this.duration(lastEvent.datetime, this.nightTimeStart)
-    }
     return duration
   }
 

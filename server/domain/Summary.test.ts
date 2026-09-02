@@ -6,20 +6,22 @@ const startAt = new Date('2026-07-25T22:00:00Z')
 const endAt = new Date('2026-07-26T06:00:00Z')
 
 describe('computeDaySleep', () => {
-  test('日中の睡眠時間の総和が計算される', () => {
+  test('昼時間の睡眠時間の総和が計算される', () => {
     const events: Event[] = [
+      // 夜の睡眠に含まれるため6:00-6:30はカウントしない
       { name: '起きる', datetime: new Date('2026-07-25T06:30:00Z') },
       { name: '寝る', datetime: new Date('2026-07-25T09:00:00Z') },
       { name: '起きる', datetime: new Date('2026-07-25T11:00:00Z') },
       { name: '母乳', datetime: new Date('2026-07-25T11:30:00Z') },
       { name: '寝る', datetime: new Date('2026-07-25T14:30:00Z') },
       { name: '起きる', datetime: new Date('2026-07-25T16:00:00Z') },
+      // 夜の睡眠に含まれるため、20:00-22:00はカウントしない
       { name: '寝る', datetime: new Date('2026-07-25T20:00:00Z') },
       { name: '起きる', datetime: new Date('2026-07-25T23:00:00Z') },
       { name: '寝る', datetime: new Date('2026-07-25T23:30:00Z') },
     ]
     const summary = new Summary(events, [], startAt, endAt, true)
-    expect(summary.daySleepDuration).toEqual(6)
+    expect(summary.daySleepDuration).toEqual(3.5)
   })
 })
 
